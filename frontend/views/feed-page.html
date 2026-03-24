@@ -9,16 +9,17 @@
 <body>
   <div class="h-screen flex flex-col">
 
-    <div class="flex-1 overflow-y-auto min-h-0 snap-y snap-mandatory scroll-pt-12">
+    <div class="flex-1 overflow-y-auto snap-y snap-mandatory scroll-pt-18">
 
-      <header class="sticky flex justify-center top-0 bg-white p-4 z-10 h-15">
+      <header class="sticky flex justify-center top-0 z-10 bg-white p-4">
         <!-- maybe a mock buisness logo = canva? -->
         <h1 class="text-3xl font-bold text-blue-600">NUFREND</h1>
         <!-- dark mode toggle button would be cool -->
       </header>
       <!-- where all the dog profiles will be displayed -->
       <!-- need to fix grid expansion for much bigger screens -->
-      <div id="feed-box" class="mx-auto p-4 w-full max-w-[1400px] grid gap-4 grid-cols-[repeat(auto-fit,minmax(350px,1fr))]">
+      <div id="feed-box" class="flex flex-col gap-4 w-full max-w-[1400px] mx-auto p-4
+              md:grid md:grid-cols-[repeat(auto-fit,minmax(350px,1fr))] md:gap-4 md:snap-none">
         <!-- profiles -->
       </div>
 
