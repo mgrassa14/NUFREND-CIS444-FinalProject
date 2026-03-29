@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PuppyGram – Sign In</title>
-  <link rel="stylesheet" href="main.css" />
+  <title>PuppyGram – Login/Sign Up</title>
+  <link rel="stylesheet" href="css/main.css" />
 </head>
 <body class="min-h-screen bg-gray-200 font-sans">
 
   <!-- Background placeholder -->
   <div class="min-h-screen bg-gradient-to-br from-green-100 via-gray-100 to-amber-50 flex items-center justify-center text-gray-400 text-sm">
-    Your site content behind the modal
+    Content behind the modal
   </div>
 
   <!-- Modal Backdrop -->
@@ -26,12 +26,12 @@
 
       <!-- Heading -->
       <h1 class="text-2xl font-bold text-gray-900 mb-1">Welcome to PuppyGram</h1>
-      <p class="text-gray-500 text-sm mb-6">Sign in to save your favorite dogs and connect with shelters</p>
+      <p class="text-gray-500 text-sm mb-6">Login to save your favorite dogs and connect with shelters</p>
 
       <!-- Tab Toggle -->
       <div class="relative flex bg-gray-100 rounded-full p-1 mb-6">
         <div id="tabSlider" class="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-full shadow-sm transition-transform duration-200 ease-out"></div>
-        <button id="tabSignIn" onclick="switchTab('signin')" class="flex-1 relative z-10 py-2.5 text-[15px] font-semibold text-gray-900 bg-transparent border-none cursor-pointer transition-colors duration-200">Sign In</button>
+        <button id="tabLogin" onclick="switchTab('login')" class="flex-1 relative z-10 py-2.5 text-[15px] font-semibold text-gray-900 bg-transparent border-none cursor-pointer transition-colors duration-200">Login</button>
         <button id="tabSignUp" onclick="switchTab('signup')" class="flex-1 relative z-10 py-2.5 text-[15px] font-semibold text-gray-500 bg-transparent border-none cursor-pointer transition-colors duration-200">Sign Up</button>
       </div>
 
@@ -40,7 +40,7 @@
 
         <!-- Name (signup only) -->
         <div id="nameField" class="max-h-0 overflow-hidden transition-all duration-300">
-          <label class="block text-sm font-semibold text-gray-800 mb-1.5">Full Name</label>
+          <label id="nameLabel" class="block text-sm font-semibold text-gray-800 mb-1.5">Full Name</label>
           <div class="relative">
             <img src="assets/icons/user.svg" alt="" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] opacity-40" />
             <input type="text" placeholder="Your full name" class="w-full py-3 pl-11 pr-3.5 border-[1.5px] border-gray-200 rounded-[10px] text-[15px] text-gray-900 bg-gray-50 placeholder-gray-400 outline-none focus:border-indigo-500 focus:ring-[3px] focus:ring-indigo-500/10 focus:bg-white transition-all" />
@@ -86,28 +86,9 @@
         </button>
       </form>
 
-      <!-- Divider -->
-      <div class="flex items-center gap-4 my-5 text-gray-400 text-xs font-medium tracking-wider uppercase">
-        <div class="flex-1 h-px bg-gray-200"></div>
-        <span>or continue with</span>
-        <div class="flex-1 h-px bg-gray-200"></div>
-      </div>
-
-      <!-- Social Login -->
-      <div class="flex gap-3">
-        <button class="flex-1 flex items-center justify-center gap-2.5 py-2.5 border-[1.5px] border-gray-200 rounded-[10px] bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer">
-          <img src="assets/icons/google.svg" alt="Google" class="w-5 h-5" />
-          Google
-        </button>
-        <button class="flex-1 flex items-center justify-center gap-2.5 py-2.5 border-[1.5px] border-gray-200 rounded-[10px] bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer">
-          <img src="assets/icons/github.svg" alt="GitHub" class="w-5 h-5" />
-          GitHub
-        </button>
-      </div>
-
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script src="js/script.js"></script>
 </body>
 </html>
