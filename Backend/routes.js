@@ -23,12 +23,12 @@ router.get('/',(req,res)=>{
 });
 
 
-router.get('/dogprofile', async (req, res) => { 
+router.get('/dogprofile/:id', async (req, res) => { 
     const database = req.app.locals.db;
     const dogs = database.collection("Dogs"); 
 
     try {
-        const query = { "_id": new ObjectId("64a1f2c3e4b0a1234567890a") };
+        const query = { "_id": new ObjectId(req.params.id) };
         
         
         const dog = await dogs.findOne(query); 
