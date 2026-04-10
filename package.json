@@ -1,8 +1,4 @@
 {
-  "dependencies": {
-    "@tailwindcss/cli": "^4.2.1",
-    "tailwindcss": "^4.2.1"
-  },
   "name": "nufrend-cis444-finalproject",
   "version": "1.0.0",
   "description": "",
@@ -21,5 +17,9 @@
   "bugs": {
     "url": "https://github.com/mgrassa14/NUFREND-CIS444-FinalProject/issues"
   },
-  "homepage": "https://github.com/mgrassa14/NUFREND-CIS444-FinalProject#readme"
+  "homepage": "https://github.com/mgrassa14/NUFREND-CIS444-FinalProject#readme",
+  "dependencies": {
+    "@tailwindcss/cli": "^4.2.2",
+    "tailwindcss": "^4.2.2"
+  }
 }
