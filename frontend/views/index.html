@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- tailwind css -->
+  <link href="../css/output-main.css" rel="stylesheet">
+
+  <!-- js for each page -->
+  <script src="../js/router.js" defer></script>
+  <script src="../js/feed-page.js" defer></script>
+  <script src="../js/favorites-page.js" defer></script>
+  <!-- <script src="../js/profiles-page.js" defer></script> -->
+</head>
+
+<body>
+  <div class="h-screen flex flex-col">
+
+    <div class="flex-1 overflow-y-auto snap-y snap-mandatory scroll-pt-18">
+
+      <header class="sticky flex justify-center top-0 z-10 bg-white p-4">
+        <h1 class="text-3xl font-bold text-blue-600">NUFREND</h1>
+      </header>
+
+      <!-- SPA content goes here -->
+      <div id="app"></div>
+
+    </div>
+
+    <!-- navigation between pages -->
+    <footer class="sticky bottom-0 bg-white border-t border-gray-300 z-10">
+      <div class="mx-auto max-w-[1400px] flex justify-around items-center h-15">
+
+        <button onclick="navigate('feed-page')">
+          <img src="../media/img/magnifying-glass.png" class="w-8 h-8">
+        </button>
+
+        <button onclick="navigate('favorites-page')">
+          <img src="../media/img/heart.png" class="w-8 h-8">
+        </button>
+
+        <button onclick="navigate('profile')">
+          <img src="../media/img/user.png" class="w-8 h-8">
+        </button>
+
+      </div>
+    </footer>
+
+  </div>
+</body>
+</html>
