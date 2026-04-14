@@ -44,8 +44,24 @@ async function loadFavorites() {
       <div class="absolute bottom-0 left-0 w-full p-3 bg-gradient-to-t from-black/60 to-transparent text-white">
         <div class="name font-bold text-3xl">${profile.name}</div>
       </div>
-      <button class="favorite absolute top-3 right-3 text-5xl">❤️</button>
+      <button class="like absolute top-3 right-3 text-5xl">❤️</button>
     `;
+
+    const button = card.querySelector(".like");
+    button.addEventListener("click", (e) => {
+      e.stopPropagation();
+      button.textContent = button.textContent === "🤍" ? "❤️" : "🤍";
+      // favorite functionality
+      if(button.textContent == "❤️"){
+        // check if dog is in favorites
+        // if not in favorites
+        // add to favorites 
+      } else if (button.textContent == "🤍"){
+        // check if dog is in favorites
+        // if it is in favorties
+        // remove from favorites
+      }
+    });
 
     // clicking a favorite → go to profile
     card.addEventListener("click", () => {
