@@ -46,6 +46,26 @@ router.get('/dogprofile/:id', async (req, res) => {
     }
 });
 
+router.get('/dogs', async (req, res) => { 
+    const database = req.app.locals.db;
+    const dogs = database.collection("Dogs"); 
+
+    try {
+        const query = { _id:  1};
+        const dog = await dogs.find().project(query).toArray(); 
+
+        if (!dog) {
+            return res.status(404).send("Dog not found");
+        }
+
+        console.log(dog);
+        res.status(200).send(dog);
+    } 
+    catch (err) {
+        console.error(err); 
+        res.status(500).send("Failed to fetch dog"); 
+    }
+});
 
 router.get('/user/:id', async (req, res) => { 
     const database = req.app.locals.db;
@@ -69,5 +89,30 @@ router.get('/user/:id', async (req, res) => {
         res.status(500).send("Failed to fetch account"); 
     }
 });
+
+
+router.get('/user/favorites/:id', async (req, res) => { 
+    const database = req.app.locals.db;
+    const people = database.collection("People"); 
+
+    try {
+        const query = {"_id": new ObjectId(req.params.id)};
+        
+        const projectfield = { _id:0 , liked_dogs: 1 };//{ "_id": new ObjectId(req.params.id) };
+        const personlikes = await people.find(query).project(projectfield).toArray();//await people.findOne(query).project(projectfield); 
+
+        if (!personlikes) {
+            return res.status(404).send("user not found/ favorites not found");
+        }
+        console.log(personlikes);
+        res.status(200).send(personlikes);
+    } 
+    catch (err) {
+        console.error(err); 
+        res.status(500).send("Failed to fetch account liked"); 
+    }
+});
+
+
 
 module.exports = router;
