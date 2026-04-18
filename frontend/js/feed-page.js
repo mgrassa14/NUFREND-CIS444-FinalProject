@@ -1,11 +1,31 @@
-// call backend for list of all dogs
-const res = await fetch("/api/dogs"); // update route for all dogs <-----------
-const profiles = await res.json();
+
 
 // get the id for the feed box the profiles will go into
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const feedBox = document.getElementById("feed-box");
   if (!feedBox) return;
+
+  // call backend for list of all dogs
+  const res = await fetch("http://localhost:3000/api/dogs"); // update route for all dogs <-----------
+  const profiles = await res.json();
+
+//   const profiles = [
+//   {
+//     id: 1,
+//     name: "Buddy",
+//     image: "https://t3.ftcdn.net/jpg/02/74/06/48/240_F_274064877_Tuq84kGOn5nhyIJeUFTUSvXaSeedAOTT.jpg"
+//   },
+//   {
+//     id: 2,
+//     name: "Luna",
+//     image: "https://karenhoglundphotography.com/wp-content/uploads/2020/09/Maltese-puppy.jpg"
+//   },
+//   {
+//     id: 3,
+//     name: "Max",
+//     image: "https://vetmed.tamu.edu/news/wp-content/uploads/sites/9/2023/05/Puppy-Timeline-1-1024x768.jpeg"
+//   }
+// ];
 
 // if (!feedBox) return;
 // for each profile in the array profiles...
