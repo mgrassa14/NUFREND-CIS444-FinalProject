@@ -1,32 +1,7 @@
-// -----------------------------------------
-  // ❌ BACKEND NOT READY — SPA FETCH DISABLED
-  // -----------------------------------------
-  /*
-  const res = await fetch("/api/dogs");
-  const profiles = await res.json();
-  */
+// call backend for list of all dogs
+const res = await fetch("/api/dogs"); // update route for all dogs <-----------
+const profiles = await res.json();
 
-  // -----------------------------------------
-  // ✅ TEMPORARY FAKE DATA (YOUR ORIGINAL DATA)
-  // -----------------------------------------
-// sample dog dog profiles
-const profiles = [
-  {
-    id: 1,
-    name: "Buddy",
-    image: "https://t3.ftcdn.net/jpg/02/74/06/48/240_F_274064877_Tuq84kGOn5nhyIJeUFTUSvXaSeedAOTT.jpg"
-  },
-  {
-    id: 2,
-    name: "Luna",
-    image: "https://karenhoglundphotography.com/wp-content/uploads/2020/09/Maltese-puppy.jpg"
-  },
-  {
-    id: 3,
-    name: "Max",
-    image: "https://vetmed.tamu.edu/news/wp-content/uploads/sites/9/2023/05/Puppy-Timeline-1-1024x768.jpeg"
-  }
-];
 // get the id for the feed box the profiles will go into
 document.addEventListener("DOMContentLoaded", () => {
   const feedBox = document.getElementById("feed-box");
@@ -41,7 +16,7 @@ profiles.forEach(profile => {
     card.className = "profile snap-start relative w-full h-[33rem] rounded-xl overflow-hidden bg-cover bg-center cursor-pointer transition-transform duration-200 hover:scale-[1.02]";
     // set background image
     card.style.backgroundImage = `url(${profile.image})`;
-    // set inner content ❤️
+    // set inner content 🤍❤️
     card.innerHTML = `
         <div class="absolute bottom-0 left-0 w-full p-3 bg-gradient-to-t from-black/60 to-transparent text-white">
         <div class="name font-bold text-3xl">${profile.name}</div>
@@ -53,22 +28,44 @@ profiles.forEach(profile => {
         window.location.href = `profile.html?id=${profile.id}`;
     });
 
-    // favorite button (prevent redirect)
+    // favorite button
     const button = card.querySelector(".like");
-    button.addEventListener("click", (e) => {
-      e.stopPropagation();
-      button.textContent = button.textContent === "🤍" ? "❤️" : "🤍";
-      // favorite functionality
-      if(button.textContent == "❤️"){
-        // check if dog is in favorites
-        // if not in favorites
-        // add to favorites 
-      } else if (button.textContent == "🤍"){
-        // check if dog is in favorites
-        // if it is in favorties
-        // remove from favorites
+    button.addEventListener("click", async (e) => {
+    e.stopPropagation();
+    // get dog's id and user's id
+    const dogId = profile.id;
+    const userId = "123"; // need to update <---------------------
+    // checks what the heart is currently at
+    // if starts with ❤️ -> isLiked = true
+    // if starts with 🤍 -> isLiked = false
+    const isLiked = button.textContent === "❤️";
+    // update 
+    // if starts with ❤️ -> change to 🤍
+    // if starts with 🤍 -> change to ❤️
+    button.textContent = isLiked ? "🤍" : "❤️";
+
+    try {
+      if (!isLiked) {
+        // ❤️ add to favorites
+        await fetch(`/api/user/favorites/${userId}`, { // update favorites api route <------------------
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ dogId })
+        });
+      } else {
+        // 🤍 remove from favorites
+        await fetch(`/api/user/favorites/${userId}/${dogId}`, { // update route <----------------------
+          method: "DELETE"
+        });
       }
-    });
+    } catch (err) {
+      console.error("Favorite toggle failed:", err);
+
+      // revert back if it fails
+      button.textContent = isLiked ? "❤️" : "🤍";
+    }
+  });
+
     // add div profile to feed-box and loop again until no more profiles
     feedBox.appendChild(card);
 });
