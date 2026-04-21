@@ -1,0 +1,5 @@
+To run the tailwindcss cli command: 
+* in the terminal, go to the folder where the css folder would be
+    ...\NUFREND\NUFREND-CIS444-FinalProject\frontend
+* run command
+    npx tailwindcss -i ./css/main.css -o ./css/output-main.css --watch
