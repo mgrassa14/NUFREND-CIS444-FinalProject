@@ -1,50 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const { ObjectId } = require('mongodb');
+const { register, login, verifyToken } = require('./firebase');
+
+// ────────────────────────────────────
+router.post('/register', register);
+
+router.post('/login', login);
 
 
-
-router.post('/submit', async (req, res) => {
-try{
-  const db = req.app.locals.db;   // db attached in app.js
-  const { name, message } = req.body;
-  const entry = { name, message, timestamp: new Date() };
-  await db.collection('submissions').insertOne(entry);
-  res.json({ success: true, entry });
-}catch(err){
-    console.error('what you do?????:',err.message);
-    res.status(500).json({error: 'failed to save submission'});
-}
-});
-
-
-router.get('/',(req,res)=>{
+router.get('/', (req, res) => {
   res.send('server is running!');
 });
 
-
-router.get('/dogprofile/:id', async (req, res) => { 
-    const database = req.app.locals.db;
-    const dogs = database.collection("Dogs"); 
-
-    try {
-        const query = { "_id": new ObjectId(req.params.id) };
-        
-        
-        const dog = await dogs.findOne(query); 
-
-        if (!dog) {
-            return res.status(404).send("Dog not found");
-        }
-
-        console.log(dog);
-        res.status(200).send(dog);
-    } 
-    catch (err) {
-        console.error(err); 
-        res.status(500).send("Failed to fetch dog"); 
-    }
-});
 
 router.get('/dogs', async (req, res) => { 
     const database = req.app.locals.db;
@@ -114,5 +82,26 @@ router.get('/user/favorites/:id', async (req, res) => {
 });
 
 
+router.get('/Vuser/:id', verifyToken, async (req, res) => {
+  const people = req.app.locals.db.collection("People");
+  try {
+    const person = await people.findOne({ "_id": new ObjectId(req.params.id) });
+    if (!person) return res.status(404).send("User not found");
+    res.status(200).send(person);
+  } catch (err) {
+    res.status(500).send("Failed to fetch account");
+  }
+});
+
+router.get('/Vdogprofile/:id', verifyToken, async (req, res) => {
+  const dogs = req.app.locals.db.collection("Dogs");
+  try {
+    const dog = await dogs.findOne({ "_id": new ObjectId(req.params.id) });
+    if (!dog) return res.status(404).send("Dog not found");
+    res.status(200).send(dog);
+  } catch (err) {
+    res.status(500).send("Failed to fetch dog");
+  }
+});
 
 module.exports = router;
