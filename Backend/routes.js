@@ -19,8 +19,8 @@ router.get('/dogs', async (req, res) => {
     const dogs = database.collection("Dogs"); 
 
     try {
-        
-        const dog = await dogs.find().toArray(); 
+        const query = {_id:1, name: 1,photos:1};
+        const dog = await dogs.find().project(query).toArray(); 
 
         if (!dog) {
             return res.status(404).send("Dogs not found");
