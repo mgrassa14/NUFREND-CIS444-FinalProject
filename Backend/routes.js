@@ -3,6 +3,7 @@ const router = express.Router();
 const { ObjectId } = require('mongodb');
 const { register, login, verifyToken } = require('./firebase');
 
+
 // ────────────────────────────────────
 router.post('/register', register);
 
@@ -35,6 +36,37 @@ router.get('/dogs', async (req, res) => {
     }
 });
 
+router.get('/tstimg', async (req, res) => { 
+    const database = req.app.locals.db;
+    const dogs = database.collection("Dogs"); 
+
+   
+        const dogid = "85c3a4e5f6d2c3456789001a";
+
+
+    
+});
+
+router.get('/tstimg', async (req, res) => { 
+    const database = req.app.locals.db;
+    const dogs = database.collection("Dogs"); 
+
+    try {
+        const query = {_id:1, name: 1,photos:1};
+        const dog = await dogs.find().project(query).toArray(); 
+
+        if (!dog) {
+            return res.status(404).send("Dogs not found");
+        }
+
+        console.log(dog);
+        res.status(200).send(dog);
+    } 
+    catch (err) {
+        console.error(err); 
+        res.status(500).send("Failed to fetch dog"); 
+    }
+});
 router.get('/user/:id', async (req, res) => { 
     const database = req.app.locals.db;
     const people = database.collection("People"); 

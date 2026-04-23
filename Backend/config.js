@@ -22,12 +22,13 @@ const client = new MongoClient(process.env.DATABASE_URL, {
 //   appId:             process.env.APP_ID,          
 //   measurementId:     process.env.MEASUREMENT_ID
 // };
+//
 
 const firebaseConfig = {
    apiKey:"AIzaSyA4lNVzdOmy8lyd1qAKmoMB7Kx8h8JZ2c0",
   authDomain:  "nufrend-4c569.firebaseapp.com",
   projectId: "nufrend-4c569",
-  torageBucket: "nufrend-4c569.firebasestorage.app",
+  storageBucket: "nufrend-4c569.firebasestorage.app",
   messagingSenderId: "469494271060",
   appId:         "1:469494271060:web:35373321e927b93ced71c1",
   measurementId:  "G-MN00YRH47F"
