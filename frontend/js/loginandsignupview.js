@@ -58,3 +58,7 @@ function handleSubmit(e) {
   const action = currentTab === "Login" ? "Signing in" : "Signing up";
   alert(`${action} as ${accountType}`);
 }
+
+// have a fetch api call post method that will send the name username, password to (route) 
+// get back token
+// get back confirmation 200 
