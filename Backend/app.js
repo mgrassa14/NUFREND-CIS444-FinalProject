@@ -4,18 +4,19 @@ const { connectDB,runPing,client } = require('./config');
 
 const Router = require('./routes');
 const express = require('express');
+const path = require('path');
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-//app.use(express.static('public')) // serves static files
+app.use(express.static(path.join(__dirname, '../frontend')));// serves static files
 app.use('/api', Router);
 
 connectDB().then(db => {
   app.locals.db = db;  // attach db to app so routes can access it
 });
 
-app.use('/api', Router);
+// app.use('/api', Router);
 
 //const dogRoutes = require('./routes/dogRoutes')(client);
 
