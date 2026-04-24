@@ -1,28 +1,9 @@
 //connect to the db
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-
-
-
 const client = new MongoClient(process.env.DATABASE_URL, {
   serverApi: { version: ServerApiVersion.v1, strict: true,deprecationErrors: true,}
 });
 
-
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-// const firebaseConfig = {
-//   apiKey: process.env.API_KEY,
-//   authDomain: process.env.AUTH_DOMAIN,
-//   projectId: process.env.PROJECT_ID,
-//   storageBucket: process.env.STORAGE_BUCKET,
-//   messagingSenderId: process.env.MESSENGING_USER_ID,
-//   appId:             process.env.APP_ID,          
-//   measurementId:     process.env.MEASUREMENT_ID
-// };
-//
 
 const firebaseConfig = {
    apiKey:"AIzaSyA4lNVzdOmy8lyd1qAKmoMB7Kx8h8JZ2c0",
@@ -35,11 +16,7 @@ const firebaseConfig = {
 };
 
 
-
 // Initialize Firebase
-
-
-
 async function connectDB() {
   try {
     // Connect the client to the server	(optional starting in v4.7)

@@ -3,13 +3,6 @@ const {initializeApp} = require('firebase/app');
 const {getStorage,ref} = require('firebase/storage');
 
 
-// TODO: Replace the following with your app's Firebase project configuration
-// See: https://firebase.google.com/docs/web/learn-more#config-object
-// const firebaseConfig = {
-//   // ...
-//   storageBucket: 'BUCKET_NAME'
-// };
-
 
 // Initialize Cloud Storage and get a reference to the service
 let serviceAccount;
@@ -21,12 +14,16 @@ try {
 }
 
 admin.initializeApp({
+  
   credential: admin.credential.cert(serviceAccount),
   projectId: process.env.PROJECT_ID,
- storageBucket: process.env.STORAGE_BUCKET,
+ storageBucket: process.env.CUBETA,
 });
 
 const auth = admin.auth();
+const db = admin.firestore();
+const bucket = admin.storage().bucket();
+console.log(bucket.name);
 
 const AUTH_API = 'https://identitytoolkit.googleapis.com/v1/accounts';
 const API_KEY = process.env.API_KEY;
@@ -139,4 +136,4 @@ async function verifyToken(req, res, next) {
   }
 }
 
-module.exports = { register, login, verifyToken };
+module.exports = { register, login, verifyToken,admin, db, bucket  };
