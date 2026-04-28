@@ -1,7 +1,20 @@
+// import { getIdToken, getRefreshToken, getUserId } from "./auth.js";
+
 // get the id for the feed box the profiles will go into
 document.addEventListener("DOMContentLoaded", async () => {
   const feedBox = document.getElementById("feed-box");
   if (!feedBox) return;
+
+  // get tokens and userId from localStorage
+  // const idToken = getIdToken();
+  // const refreshToken = getRefreshToken();
+  // const userId = getUserId();
+
+  // if not logged in, redirect to login
+  // if (!idToken || !userId) {
+  //   window.location.href = "/frontend/views/loginandsignupview.html";
+  //   return;
+  // }
 
   const res = await fetch("http://localhost:3000/api/dogs");
   const profiles = await res.json();
@@ -22,27 +35,40 @@ profiles.forEach(profile => {
         </div>
         <button class="like absolute top-3 right-3 text-5xl">🤍</button>
     `;
-    // redirect on card click
-    card.addEventListener("click", () => {
-        window.location.href = `profile.html?id=${profile.id}`;
-    });
 
     // favorite button (prevent redirect)
     const button = card.querySelector(".like");
-    button.addEventListener("click", (e) => {
+    button.addEventListener("click", async (e) => {
       e.stopPropagation();
-      button.textContent = button.textContent === "🤍" ? "❤️" : "🤍";
+      
+      const isLiking = button.textContent === "🤍";
+      button.textContent = isLiking ? "❤️" : "🤍";
+
       // favorite functionality
-      if(button.textContent == "❤️"){
-        // check if dog is in favorites
-        // if not in favorites
-        // add to favorites 
-      } else if (button.textContent == "🤍"){
-        // check if dog is in favorites
-        // if it is in favorties
-        // remove from favorites
+      if (isLiking) {
+        await fetch(`http://localhost:3000/api/user/favorites/${userId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${idToken}`
+          },
+          body: JSON.stringify({ dogId: profile._id })
+        });
+      } else {
+        await fetch(`http://localhost:3000/api/user/favorites/${userId}/${profile._id}`, {
+          method: "DELETE",
+          headers: {
+            "Authorization": `Bearer ${idToken}`
+          }
+        });
       }
     });
+
+    // redirect on card click
+    card.addEventListener("click", () => {
+        window.location.href = `dog-profile-view.html?id=${profile._id}`;
+    });
+
     // add div profile to feed-box and loop again until no more profiles
     feedBox.appendChild(card);
 });

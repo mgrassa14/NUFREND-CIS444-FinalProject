@@ -8,7 +8,8 @@ async function loadDogProfile() {
   }
 
   try {
-    const response = await fetch(`/api/dogprofile/${dogId}`);
+    // const response = await fetch(`/api/dogprofile/${dogId}`);
+    const response = await fetch(`http://localhost:3000/api/dogprofile/${dogId}`);
     const dog = await response.json();
 
     if (!response.ok) {
