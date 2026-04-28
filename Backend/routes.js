@@ -6,9 +6,9 @@ const { bucket } = require('./firebase'); // or wherever your config is
 const axios = require('axios');
 
 // ────────────────────────────────────
-router.post('/register', register);
+// router.post('/register', register);
 
-router.post('/login', login);
+// router.post('/login', login);
 
 
 router.get('/', (req, res) => {
