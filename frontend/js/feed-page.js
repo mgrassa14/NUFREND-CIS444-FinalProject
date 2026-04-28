@@ -2,15 +2,9 @@
 document.addEventListener("DOMContentLoaded", async () => {
   const feedBox = document.getElementById("feed-box");
   if (!feedBox) return;
-  // get list of all dogs <----------------------------
-  let profiles = [];
-  try {
-    const res = await fetch("http://localhost:3000/api/dogs");
-    profiles = await res.json();
-  } catch (err) {
-    console.error("Failed to fetch dogs:", err);
-    return;
-  }
+
+  const res = await fetch("http://localhost:3000/api/dogs");
+  const profiles = await res.json();
 
 // if (!feedBox) return;
 // for each profile in the array profiles...
@@ -20,7 +14,7 @@ profiles.forEach(profile => {
     // give div class names
     card.className = "profile snap-start relative w-full h-[33rem] rounded-xl overflow-hidden bg-cover bg-center cursor-pointer transition-transform duration-200 hover:scale-[1.02]";
     // set background image
-    card.style.backgroundImage = `url(${profile.photos[1]})`;
+    card.style.backgroundImage = `url(${profile.photos[0]})`;
     // set inner content ❤️
     card.innerHTML = `
         <div class="absolute bottom-0 left-0 w-full p-3 bg-gradient-to-t from-black/60 to-transparent text-white">
@@ -30,7 +24,7 @@ profiles.forEach(profile => {
     `;
     // redirect on card click
     card.addEventListener("click", () => {
-        window.location.href = `profile.html?id=${profile._id}`;
+        window.location.href = `profile.html?id=${profile.id}`;
     });
 
     // favorite button (prevent redirect)

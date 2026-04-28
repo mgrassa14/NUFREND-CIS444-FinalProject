@@ -1,10 +1,22 @@
 //connect to the db
-const { MongoClient, ServerApiVersion,ObjectId } = require('mongodb');
-
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const client = new MongoClient(process.env.DATABASE_URL, {
   serverApi: { version: ServerApiVersion.v1, strict: true,deprecationErrors: true,}
 });
 
+
+const firebaseConfig = {
+   apiKey:"AIzaSyA4lNVzdOmy8lyd1qAKmoMB7Kx8h8JZ2c0",
+  authDomain:  "nufrend-4c569.firebaseapp.com",
+  projectId: "nufrend-4c569",
+  storageBucket: "nufrend-4c569.firebasestorage.app",
+  messagingSenderId: "469494271060",
+  appId:         "1:469494271060:web:35373321e927b93ced71c1",
+  measurementId:  "G-MN00YRH47F"
+};
+
+
+// Initialize Firebase
 async function connectDB() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -33,4 +45,4 @@ async function runPing() {
 }
 
 // exports 
-module.exports = { connectDB, client, runPing};
+module.exports = { connectDB, client, runPing,firebaseConfig };

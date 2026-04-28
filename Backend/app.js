@@ -1,25 +1,55 @@
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-
-const { connectDB,runPing,client } = require('./config');
-
-const Router = require('./routes');
 const express = require('express');
+const cors = require('cors');
+const { connectDB, firebaseConfig } = require('./config');
+const Router = require('./routes');
 
 const app = express();
+
+// ── CORS ───────────────────────────────────────────
+const allowedOrigins = [
+  'http://localhost:3000', 
+  'http://127.0.0.1:5500',
+  process.env.FRONTEND_URL,         // e.g. https://yourapp.com
+        
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // allow requests with no origin (mobile apps, curl, Postman)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS blocked: ${origin}`));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,                 
+}));
+
+        
+
+// ── Middleware ─────────────────────────────────────
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-//app.use(express.static('public')) // serves static files
-//app.use('/api', Router);
 
-connectDB().then(db => {
-  app.locals.db = db;  // attach db to app so routes can access it
-});
-
+// ── Routes ─────────────────────────────────────────
 app.use('/api', Router);
+// ── Start Server only after DB connects ───────────
+async function startServer() {
+  try {
+    const db = await connectDB();
+    app.locals.db = db;             
 
+    app.listen(3000, () => {
+      console.log('Server running on port 3000');
+    });
+  } catch (err) {
+    console.error('Failed to start server:', err.message);
+    process.exit(1);
+  }
+}
 
+startServer();
 
-
-
-//runPing().catch(console.dir);
 module.exports = app;
