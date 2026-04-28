@@ -64,7 +64,8 @@ async function handleSubmit(e) {
   if (currentTab === "login") {
     // --- LOGIN ---
     try {
-      const response = await fetch('/api/login', {
+      // const response = await fetch('/api/login', {
+      const response = await fetch('http://localhost:3000/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -85,7 +86,8 @@ async function handleSubmit(e) {
   } else {
     // --- SIGNUP ---
     try {
-      const response = await fetch('/api/signup', {
+      // const response = await fetch('/api/signup', {
+      const response = await fetch('http://localhost:3000/api/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: nameInput, email, password, accountType })
