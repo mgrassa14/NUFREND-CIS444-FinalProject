@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { connectDB, firebaseConfig } = require('./config');
 const Router = require('./routes');
+const path = require('path');
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ── Routes ─────────────────────────────────────────
+app.use(express.static(path.join(__dirname, '../frontend')));// serves static files
 app.use('/api', Router);
 // ── Start Server only after DB connects ───────────
 async function startServer() {
@@ -51,5 +53,6 @@ async function startServer() {
 }
 
 startServer();
+// app.use('/api', Router);
 
 module.exports = app;

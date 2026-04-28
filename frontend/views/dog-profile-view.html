@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PuppyGram – Pet Profile</title>
+  <link href="../css/output-main.css" rel="stylesheet"/>
+  <script src="../js/dog-profile-view.js" defer></script>
+  <style>
+    body { font-family: 'DM Sans', sans-serif; background-color: #f0f0ee; }
+    h1, h2 { font-family: 'Lora', serif; }
+  </style>
+</head>
+<body class="min-h-screen bg-[#f0f0ee]">
+
+  <!-- Hero Image -->
+  <div class="w-full flex justify-center pt-8">
+    <div class="w-56 h-56 rounded-2xl overflow-hidden shadow-lg">
+      <img
+        id="dog-image"
+        src=""
+        alt="Dog photo"
+        class="w-full h-full object-cover hidden"
+      />
+    </div>
+  </div>
+
+  <!-- Profile Card -->
+  <div class="max-w-2xl mx-auto mt-6 mb-12 bg-white rounded-3xl shadow-sm px-8 py-8">
+
+    <!-- Name & Breed -->
+    <div class="mb-6">
+      <h1 id="dog-name" class="text-3xl font-bold text-gray-900">...</h1>
+      <p id="dog-breed" class="text-sm text-gray-400 mt-0.5">...</p>
+    </div>
+
+    <!-- Top Stats Grid -->
+    <div class="grid grid-cols-4 gap-3 mb-4">
+      <!-- Age -->
+      <div class="bg-blue-50 rounded-xl p-3">
+        <div class="text-blue-400 mb-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke-width="2"/>
+            <line x1="16" y1="2" x2="16" y2="6" stroke-width="2"/>
+            <line x1="8" y1="2" x2="8" y2="6" stroke-width="2"/>
+            <line x1="3" y1="10" x2="21" y2="10" stroke-width="2"/>
+          </svg>
+        </div>
+        <p class="text-[10px] text-gray-400 uppercase tracking-wide">Age</p>
+        <p id="dog-age" class="text-sm font-semibold text-gray-800">...</p>
+      </div>
+      <!-- Weight -->
+      <div class="bg-green-50 rounded-xl p-3">
+        <div class="text-green-400 mb-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M6 2h12l2 6H4L6 2z" stroke-width="2" stroke-linejoin="round"/>
+            <rect x="3" y="8" width="18" height="13" rx="2" stroke-width="2"/>
+          </svg>
+        </div>
+        <p class="text-[10px] text-gray-400 uppercase tracking-wide">Weight</p>
+        <p id="dog-weight" class="text-sm font-semibold text-gray-800">...</p>
+      </div>
+      <!-- Energy -->
+      <div class="bg-orange-50 rounded-xl p-3">
+        <div class="text-orange-400 mb-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" stroke-width="2" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <p class="text-[10px] text-gray-400 uppercase tracking-wide">Energy</p>
+        <p id="dog-energy" class="text-sm font-semibold text-gray-800">...</p>
+      </div>
+    </div>
+
+    <!-- Gender & Color -->
+    <div class="grid grid-cols-2 gap-3 mb-7">
+      <div class="border border-gray-100 rounded-xl p-3">
+        <p class="text-[10px] text-gray-400 uppercase tracking-wide">Gender</p>
+        <p id="dog-gender" class="text-sm font-semibold text-gray-800 mt-0.5">...</p>
+      </div>
+      <div class="border border-gray-100 rounded-xl p-3">
+        <p class="text-[10px] text-gray-400 uppercase tracking-wide">Color</p>
+        <p id="dog-color" class="text-sm font-semibold text-gray-800 mt-0.5">...</p>
+      </div>
+    </div>
+
+    <!-- About -->
+    <div class="mb-7">
+      <h2 id="dog-about-heading" class="text-lg font-bold text-gray-900 mb-2">About</h2>
+      <p id="dog-description" class="text-sm text-gray-500 leading-relaxed">...</p>
+    </div>
+
+    <!-- Health & Training -->
+    <div class="mb-7">
+      <h2 class="text-lg font-bold text-gray-900 mb-3">Health Checks</h2>
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div id="dog-vaccinated" class="flex items-center gap-2 border border-gray-100 rounded-xl px-3 py-2.5">
+          <svg class="w-4 h-4 shrink-0 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke-width="2" stroke-linecap="round"/>
+            <polyline points="22 4 12 14.01 9 11.01" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="text-sm text-gray-700">Vaccinated</span>
+        </div>
+        <div id="dog-neutered" class="flex items-center gap-2 border border-gray-100 rounded-xl px-3 py-2.5">
+          <svg class="w-4 h-4 shrink-0 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke-width="2" stroke-linecap="round"/>
+            <polyline points="22 4 12 14.01 9 11.01" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="text-sm text-gray-700">Spayed/Neutered</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tags -->
+    <div>
+      <h2 class="text-lg font-bold text-gray-900 mb-3">Tags</h2>
+      <div id="dog-tags" class="flex flex-wrap gap-3">
+        <!-- Tags injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Shelter Info Card -->
+  <div class="max-w-2xl mx-auto mb-12 bg-white rounded-3xl shadow-sm px-8 py-6">
+    <div class="flex items-center gap-2 mb-4">
+      <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke-width="2"/>
+        <circle cx="12" cy="10" r="3" stroke-width="2"/>
+      </svg>
+      <h2 class="text-lg font-bold text-gray-900">Shelter Information</h2>
+    </div>
+    <p id="shelter-name" class="text-sm font-semibold text-gray-900 mb-0.5">...</p>
+    <p id="shelter-address" class="text-xs text-gray-400 mb-4">...</p>
+    <div class="space-y-2.5">
+      <div class="flex items-center gap-2 text-sm text-gray-600">
+        <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3 2.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z" stroke-width="2"/>
+        </svg>
+        <span id="shelter-phone">...</span>
+      </div>
+      <div class="flex items-center gap-2 text-sm text-gray-600">
+        <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke-width="2"/>
+          <polyline points="22,6 12,13 2,6" stroke-width="2"/>
+        </svg>
+        <span id="shelter-email">...</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
