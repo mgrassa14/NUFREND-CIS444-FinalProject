@@ -1,7 +1,23 @@
-// import { getIdToken, getRefreshToken, getUserId } from "./auth.js";
+// import { getIdToken, getRefreshToken, getUserId, getUserType } from "./auth.js";
 
 // get the id for the fav box the profiles will go into
 document.addEventListener("DOMContentLoaded", async () => {
+
+  // set profile link based on user type
+  // const userType = localStorage.getItem("userType");
+  const userType = "adopter";   // hard‑coded for testing
+  const profileLink = document.getElementById("profileLink");
+
+  if (profileLink) {
+    if (userType === "adopter") {
+      profileLink.href = "../views/adopter.html";
+    } else if (userType === "business") {
+      profileLink.href = "../views/business.html";
+    } else {
+      profileLink.href = "../views/loginandsignupview.html";
+    }
+  }
+
   const favBox = document.getElementById("fav-box");
   if (!favBox) return;
 

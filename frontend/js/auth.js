@@ -12,9 +12,14 @@ export function getRefreshToken() {
 export function getUserId() {
   return localStorage.getItem("userId");
 }
+// get the user type -> adopter or buisness 
+export function getUserType() {
+  return localStorage.getItem("userType");
+}
 // clear the tokens and user id
 export function clearAuth() {
   localStorage.removeItem("idToken");
   localStorage.removeItem("refreshToken");
   localStorage.removeItem("userId");
+  localStorage.removeItem("userType");
 }

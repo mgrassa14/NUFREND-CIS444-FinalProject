@@ -106,3 +106,10 @@ async function handleSubmit(e) {
     }
   }
 }
+
+
+// to handle login 
+// localStorage.setItem("idToken", data.idToken);
+// localStorage.setItem("refreshToken", data.refreshToken);
+// localStorage.setItem("userId", data.userId);
+// localStorage.setItem("userType", data.userType);
