@@ -1,0 +1,103 @@
+@import "tailwindcss";
+body {
+  font-family: Arial, sans-serif;
+  background: #f5f7fb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.card {
+  width: 350px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.card img {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+}
+
+.content {
+  padding: 15px;
+}
+
+h2 {
+  margin: 0;
+}
+
+.section {
+  margin-top: 10px;
+}
+
+.icons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.icon {
+  padding: 6px 10px;
+  border-radius: 20px;
+  background: #eef1f6;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.toggle {
+  background: #ffd54f;
+}
+
+select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-around;
+  padding: 15px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.yes {
+  background: #4caf50;
+  color: white;
+}
+
+.no {
+  background: #f44336;
+  color: white;
+}
+#logoutBtn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 8px 14px;
+  background: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  z-index: 10;
+}
+
+#logoutBtn:hover {
+  background: #cc0000;
+}
