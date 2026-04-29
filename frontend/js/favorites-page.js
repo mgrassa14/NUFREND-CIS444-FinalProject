@@ -1,45 +1,63 @@
-  // -----------------------------------------
-  // ❌ BACKEND NOT READY — SPA FETCH DISABLED
-  // -----------------------------------------
-  /*
-  const res = await fetch("/api/favorites");
-  const favorites = await res.json();
-  */
+// import { getIdToken, getRefreshToken, getUserId, getUserType } from "./auth.js";
 
-  // -----------------------------------------
-  // ✅ TEMPORARY FAKE FAVORITES DATA
-  // -----------------------------------------
-  const favorites = [
-    {
-      _id: 1,
-      name: "Buddy",
-      image: "https://t3.ftcdn.net/jpg/02/74/06/48/240_F_274064877_Tuq84kGOn5nhyIJeUFTUSvXaSeedAOTT.jpg"
-    },
-    {
-      _id: 2,
-      name: "Luna",
-      image: ""
-    },
-    {
-      _id: 3,
-      name: "Max",
-      image: "https://vetmed.tamu.edu/news/wp-content/uploads/sites/9/2023/05/Puppy-Timeline-1-1024x768.jpeg"
+// get the id for the fav box the profiles will go into
+document.addEventListener("DOMContentLoaded", async () => {
+
+  // set profile link based on user type
+  // const userType = localStorage.getItem("userType");
+  const userType = "adopter";   // hard‑coded for testing
+  const profileLink = document.getElementById("profileLink");
+
+  if (profileLink) {
+    if (userType === "adopter") {
+      profileLink.href = "../views/adopter.html";
+    } else if (userType === "business") {
+      profileLink.href = "../views/business.html";
+    } else {
+      profileLink.href = "../views/loginandsignupview.html";
     }
-  ];
-  // -----------------------------------------
+  }
 
-// get the id for the feed box the profiles will go into
-document.addEventListener("DOMContentLoaded", () => {
   const favBox = document.getElementById("fav-box");
   if (!favBox) return;
 
   favBox.innerHTML = "";
 
+  // get tokens and userId from localStorage
+  // const idToken = getIdToken();
+  // const refreshToken = getRefreshToken();
+  const userId = "85c3a4e5f6d2c3456789001a";
+
+  // if not logged in, redirect to login
+  // if (!idToken || !userId) {
+  //   window.location.href = "/frontend/views/loginandsignupview.html";
+  //   return;
+  // }
+
+  // const res = await fetch(`http://localhost:3000/api/user/favorites/${userId}`, {
+  //   headers: {
+  //     "Authorization": `Bearer ${idToken}`
+  //   }
+  // });
+  const res = await fetch(`http://localhost:3000/api/user/favorites/${userId}`);
+  // double check if it returns just ideas or all the dog data
+  // const favorites = await res.json();
+
+  const favData = await res.json();
+  const favoriteIds = favData[0]?.liked_dogs || [];
+
+  // 2. Fetch all dogs
+  const dogRes = await fetch("http://localhost:3000/api/dogs");
+  const allDogs = await dogRes.json();
+
+  // 3. Filter to only favorites
+  const favorites = allDogs.filter(dog => favoriteIds.includes(dog._id));
+
   favorites.forEach(profile => {
     const card = document.createElement("div");
     card.className =
       "profile snap-start relative w-full h-[33rem] rounded-xl overflow-hidden bg-cover bg-center cursor-pointer transition-transform duration-200 hover:scale-[1.02]";
-    card.style.backgroundImage = `url(${profile.image})`;
+    card.style.backgroundImage = `url(${profile.photos[0]})`;
 
     card.innerHTML = `
       <div class="absolute bottom-0 left-0 w-full p-3 bg-gradient-to-t from-black/60 to-transparent text-white">
@@ -49,24 +67,26 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
 
     const button = card.querySelector(".like");
-    button.addEventListener("click", (e) => {
+    button.addEventListener("click", async (e) => {
       e.stopPropagation();
-      button.textContent = button.textContent === "🤍" ? "❤️" : "🤍";
-      // favorite functionality
-      if(button.textContent == "❤️"){
-        // check if dog is in favorites
-        // if not in favorites
-        // add to favorites 
-      } else if (button.textContent == "🤍"){
-        // check if dog is in favorites
-        // if it is in favorties
-        // remove from favorites
+
+      const isUnLiked = button.textContent === "❤️";
+      button.textContent = isUnLiked ? "🤍" : "❤️";
+
+      // un-favorite functionality
+      if (isUnLiked) {
+        await fetch(`http://localhost:3000/api/user/favorites/${userId}/${profile._id}`, {
+          method: "DELETE",
+          headers: {
+            "Authorization": `Bearer ${idToken}`
+          }
+        });
       }
     });
 
     // clicking a favorite → go to profile
     card.addEventListener("click", () => {
-      navigate("profile", profile._id);
+        window.location.href = `dog-profile-view.html?id=${profile._id}`;
     });
 
     favBox.appendChild(card);

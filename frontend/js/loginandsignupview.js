@@ -1,4 +1,4 @@
-let currentTab = "Login";
+let currentTab = "login";
 let accountType = "adopter";
 
 function switchTab(tab) {
@@ -53,12 +53,63 @@ function closeModal() {
   document.getElementById("modalBackdrop").style.display = "none";
 }
 
-function handleSubmit(e) {
+async function handleSubmit(e) {
   e.preventDefault();
-  const action = currentTab === "Login" ? "Signing in" : "Signing up";
-  alert(`${action} as ${accountType}`);
+
+  const nameInput = document.getElementById('input-name')?.value.trim();
+  const email     = document.getElementById('input-email').value.trim();
+  const password  = document.getElementById('input-password').value.trim();
+
+
+  if (currentTab === "login") {
+    // --- LOGIN ---
+    try {
+      // const response = await fetch('/api/login', {
+      const response = await fetch('http://localhost:3000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        window.location.href = '/frontend/views/feed-page.html';
+      } else {
+        alert(data.message || 'Login failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      alert('Something went wrong. Please try again.');
+    }
+
+  } else {
+    // --- SIGNUP ---
+    try {
+      // const response = await fetch('/api/signup', {
+      const response = await fetch('http://localhost:3000/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: nameInput, email, password, accountType })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        window.location.href = '/frontend/views/feed-page.html';
+      } else {
+        alert(data.message || 'Signup failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+      alert('Something went wrong. Please try again.');
+    }
+  }
 }
 
-// have a fetch api call post method that will send the name username, password to (route) 
-// get back token
-// get back confirmation 200 
+
+// to handle login 
+// localStorage.setItem("idToken", data.idToken);
+// localStorage.setItem("refreshToken", data.refreshToken);
+// localStorage.setItem("userId", data.userId);
+// localStorage.setItem("userType", data.userType);

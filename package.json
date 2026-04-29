@@ -20,6 +20,9 @@
   "homepage": "https://github.com/mgrassa14/NUFREND-CIS444-FinalProject#readme",
   "dependencies": {
     "@tailwindcss/cli": "^4.2.2",
+    "firebase": "^12.12.0",
+    "firebase-admin": "^13.8.0",
+    "react": "^19.2.5",
     "tailwindcss": "^4.2.2"
   }
 }
