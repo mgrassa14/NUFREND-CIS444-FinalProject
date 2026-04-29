@@ -9,7 +9,7 @@ async function loadDogProfile() {
 
   try {
     // const response = await fetch(`/api/dogprofile/${dogId}`);
-    const response = await fetch(`http://localhost:3000/api/dogprofile/${dogId}`);
+    const response = await fetch(`http://localhost:3000/api/dogprofile/${dogId}`); // must use vdog profile but changing rout on back end to ignore for testoing to cpnfirm
     const dog = await response.json();
 
     if (!response.ok) {
@@ -29,9 +29,9 @@ async function loadDogProfile() {
     document.getElementById('dog-about-heading').textContent = `About ${dog.name}`;
 
     // Image
-    if (dog.image) {
+    if (dog.photos[0]) {
       const img = document.getElementById('dog-image');
-      img.src = dog.image;
+      img.src = dog.photos[0];
       img.alt = dog.name;
       img.classList.remove('hidden');
     }

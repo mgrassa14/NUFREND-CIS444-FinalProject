@@ -6,9 +6,9 @@ const { bucket } = require('./firebase'); // or wherever your config is
 const axios = require('axios');
 
 // ────────────────────────────────────
-// router.post('/register', register);
+router.post('/register', register);
 
-// router.post('/login', login);
+router.post('/login', login);
 
 
 router.get('/', (req, res) => {
@@ -190,7 +190,7 @@ router.get('/Vuser/:id', verifyToken, async (req, res) => {
 // });
 
 
-router.get('/Vdogprofile/:id', verifyToken, async (req, res) => {
+router.get('/dogprofile/:id', async (req, res) => {
   const dogs = req.app.locals.db.collection("Dogs");
   try {
     const dog = await dogs.findOne({ "_id": new ObjectId(req.params.id) });
