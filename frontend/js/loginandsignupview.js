@@ -99,6 +99,7 @@ function switchTab(tab) {
   const signInBtn = document.getElementById("tabLogin");
   const signUpBtn = document.getElementById("tabSignUp");
   const nameField = document.getElementById("nameField");
+  const accountTypeField = document.getElementById("accountTypeField");
   const submitBtn = document.getElementById("submitBtn");
 
   if (tab === "signup") {
@@ -106,12 +107,14 @@ function switchTab(tab) {
     signInBtn.classList.replace("text-gray-900", "text-gray-500");
     signUpBtn.classList.replace("text-gray-500", "text-gray-900");
     nameField.style.maxHeight = "100px";
+    accountTypeField.style.maxHeight = "200px";
     submitBtn.textContent = "Sign Up";
   } else {
     slider.style.transform = "translateX(0)";
     signUpBtn.classList.replace("text-gray-900", "text-gray-500");
     signInBtn.classList.replace("text-gray-500", "text-gray-900");
     nameField.style.maxHeight = "0";
+    accountTypeField.style.maxHeight = "0";
     submitBtn.textContent = "Login";
   }
 }
