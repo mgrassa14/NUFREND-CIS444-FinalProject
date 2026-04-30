@@ -1,5 +1,6 @@
 let currentTab = "login";
 let accountType = "adopter";
+const { ObjectId } = require('mongodb');
 
 function switchTab(tab) {
   currentTab = tab;
@@ -71,9 +72,19 @@ async function handleSubmit(e) {
         body: JSON.stringify({ email, password })
       });
 
-      const data = await response.json();
+      const data = await response.json();// data.idToken is your JWT
 
       if (response.ok) {
+        data.userType = accountType; // Add userType to the response data
+       
+        console.log(data.userId); // Log the generated userId
+        
+        
+        sessionStorage.setItem('userId', data.userId);
+        localStorage.setItem("userType", data.userType);
+        
+        sessionStorage.setItem('token', data.idToken);
+        localStorage.setItem("refreshToken", data.refreshToken);
         window.location.href = '/frontend/views/feed-page.html';
       } else {
         alert(data.message || 'Login failed. Please try again.');
@@ -87,7 +98,7 @@ async function handleSubmit(e) {
     // --- SIGNUP ---
     try {
       // const response = await fetch('/api/signup', {
-      const response = await fetch('http://localhost:3000/api/signup', {
+      const response = await fetch('http://localhost:3000/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: nameInput, email, password, accountType })
@@ -96,6 +107,18 @@ async function handleSubmit(e) {
       const data = await response.json();
 
       if (response.ok) {
+        const newId = new ObjectId(); // client side mongo id generated for session storage, will be used to fetch user data in feed page
+        sessionStorage.setItem('token', data.idToken);
+        
+        
+        data.userType = accountType; // Add userType to the response data
+        data.userId = newId.toString(); // Assign a new ObjectId as userId
+        console.log(data.userId); // Log the generated userId
+        
+        
+        sessionStorage.setItem('userId', data.userId);
+        localStorage.setItem("userType", data.userType);
+        localStorage.setItem("refreshToken", data.refreshToken);
         window.location.href = '/frontend/views/feed-page.html';
       } else {
         alert(data.message || 'Signup failed. Please try again.');

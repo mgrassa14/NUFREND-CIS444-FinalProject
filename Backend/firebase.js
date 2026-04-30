@@ -73,6 +73,7 @@ async function register(req, res) {
       returnSecureToken: true
     });
 
+
     return res.status(201).json({ 
       message: 'User created successfully', 
       uid: data.localId,
@@ -101,7 +102,8 @@ async function login(req, res) {
 
     return res.status(200).json({ 
       message: 'Login successful',
-      uid: data.localId,
+      userId: data.localId,
+      userType: data.userType,
       idToken: data.idToken,
       refreshToken: data.refreshToken
     });
