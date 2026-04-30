@@ -1,4 +1,4 @@
 require('dotenv').config();
 const app = require('./app');
-app.listen(3000, () => console.log('running on :3000'));
+app.listen(3000, () => console.log('Server running at http://localhost:3000'));
 

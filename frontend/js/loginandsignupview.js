@@ -1,9 +1,101 @@
 let currentTab = "login";
 let accountType = "adopter";
 
+// ── API base URL ──────────────────────────────────
+const API_BASE = 'http://localhost:3000/api';
+
+// ── Token helpers ─────────────────────────────────
+function saveTokens(data) {
+  localStorage.setItem('idToken',      data.idToken);
+  localStorage.setItem('refreshToken', data.refreshToken);
+  localStorage.setItem('userId',       data.userId);
+  localStorage.setItem('userType',     data.userType || '');
+  localStorage.setItem('uid',          data.uid);
+}
+
+function getIdToken() {
+  return localStorage.getItem('idToken');
+}
+
+function getRefreshToken() {
+  return localStorage.getItem('refreshToken');
+}
+
+function clearTokens() {
+  localStorage.removeItem('idToken');
+  localStorage.removeItem('refreshToken');
+  localStorage.removeItem('userId');
+  localStorage.removeItem('userType');
+  localStorage.removeItem('uid');
+}
+
+// ── Authenticated fetch wrapper ───────────────────
+// Use this for any API call that needs auth:
+//   const res = await authFetch('/api/Vuser/123');
+//   const data = await res.json();
+async function authFetch(url, options = {}) {
+  let token = getIdToken();
+
+  if (!token) {
+    // No token at all — redirect to login
+    window.location.href = '/views/loginandsignupview.html';
+    return;
+  }
+
+  // Set Authorization header
+  options.headers = {
+    ...options.headers,
+    'Authorization': `Bearer ${token}`
+  };
+
+  let response = await fetch(url, options);
+
+  // If token expired (401), try refreshing once
+  if (response.status === 401) {
+    const refreshed = await refreshIdToken();
+    if (refreshed) {
+      // Retry with new token
+      options.headers['Authorization'] = `Bearer ${getIdToken()}`;
+      response = await fetch(url, options);
+    } else {
+      // Refresh failed — send to login
+      clearTokens();
+      window.location.href = '/views/loginandsignupview.html';
+      return;
+    }
+  }
+
+  return response;
+}
+
+// ── Refresh the idToken using refreshToken ────────
+async function refreshIdToken() {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) return false;
+
+  try {
+    const response = await fetch(`${API_BASE}/refresh-token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken })
+    });
+
+    if (!response.ok) return false;
+
+    const data = await response.json();
+    localStorage.setItem('idToken',      data.idToken);
+    localStorage.setItem('refreshToken', data.refreshToken);
+    return true;
+  } catch (err) {
+    console.error('Token refresh failed:', err);
+    return false;
+  }
+}
+
+// ── Tab switching ─────────────────────────────────
 function switchTab(tab) {
   currentTab = tab;
-  const slider = document.getElementById("tabSlider");
+  const slider   = document.getElementById("tabSlider");
   const signInBtn = document.getElementById("tabLogin");
   const signUpBtn = document.getElementById("tabSignUp");
   const nameField = document.getElementById("nameField");
@@ -24,10 +116,11 @@ function switchTab(tab) {
   }
 }
 
+// ── Account type selection ────────────────────────
 function selectType(type) {
   accountType = type;
-  const adopter = document.getElementById("cardAdopter");
-  const shelter = document.getElementById("cardShelter");
+  const adopter   = document.getElementById("cardAdopter");
+  const shelter   = document.getElementById("cardShelter");
   const nameLabel = document.getElementById("nameLabel");
 
   if (type === "adopter") {
@@ -53,6 +146,7 @@ function closeModal() {
   document.getElementById("modalBackdrop").style.display = "none";
 }
 
+// ── Form submission ───────────────────────────────
 async function handleSubmit(e) {
   e.preventDefault();
 
@@ -60,12 +154,10 @@ async function handleSubmit(e) {
   const email     = document.getElementById('input-email').value.trim();
   const password  = document.getElementById('input-password').value.trim();
 
-
   if (currentTab === "login") {
-    // --- LOGIN ---
+    // ── LOGIN ──
     try {
-      // const response = await fetch('/api/login', {
-      const response = await fetch('http://localhost:3000/api/login', {
+      const response = await fetch(`${API_BASE}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -74,7 +166,9 @@ async function handleSubmit(e) {
       const data = await response.json();
 
       if (response.ok) {
-        window.location.href = '/frontend/views/feed-page.html';
+        // Store tokens + user info
+        saveTokens(data);
+        window.location.href = '/views/feed-page.html';
       } else {
         alert(data.message || 'Login failed. Please try again.');
       }
@@ -84,10 +178,9 @@ async function handleSubmit(e) {
     }
 
   } else {
-    // --- SIGNUP ---
+    // ── SIGNUP ──
     try {
-      // const response = await fetch('/api/signup', {
-      const response = await fetch('http://localhost:3000/api/signup', {
+      const response = await fetch(`${API_BASE}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: nameInput, email, password, accountType })
@@ -96,7 +189,9 @@ async function handleSubmit(e) {
       const data = await response.json();
 
       if (response.ok) {
-        window.location.href = '/frontend/views/feed-page.html';
+        // Store tokens + user info
+        saveTokens(data);
+        window.location.href = '/views/feed-page.html';
       } else {
         alert(data.message || 'Signup failed. Please try again.');
       }
@@ -106,10 +201,3 @@ async function handleSubmit(e) {
     }
   }
 }
-
-
-// to handle login 
-// localStorage.setItem("idToken", data.idToken);
-// localStorage.setItem("refreshToken", data.refreshToken);
-// localStorage.setItem("userId", data.userId);
-// localStorage.setItem("userType", data.userType);

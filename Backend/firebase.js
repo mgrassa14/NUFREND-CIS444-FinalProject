@@ -60,23 +60,41 @@ async function firebasePost(endpoint, body) {
 
 // ── Register ───────────────────────────────────────
 async function register(req, res) {
-  const { email, password } = req.body;
+  const { name, email, password, accountType } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({ code: 'invalid-input', message: 'Email and password are required' });
   }
 
   try {
+    // 1. Create user in Firebase Auth
     const data = await firebasePost(':signUp', {
       email,
       password,
       returnSecureToken: true
     });
 
+    // 2. Save user to MongoDB
+    const mongoDB = req.app.locals.db;
+    const people = mongoDB.collection('People');
+
+    const newUser = {
+      firebaseUid: data.localId,
+      name:        name || '',
+      email,
+      accountType: accountType || 'adopter',
+      createdAt:   new Date()
+    };
+
+    const result = await people.insertOne(newUser);
+
     return res.status(201).json({ 
-      message: 'User created successfully', 
-      uid: data.localId,
-      idToken: data.idToken
+      message:      'User created successfully', 
+      uid:          data.localId,
+      userId:       result.insertedId,
+      idToken:      data.idToken,
+      refreshToken: data.refreshToken,
+      userType:     accountType || 'adopter'
     });
   } catch (error) {
     const { code, message } = handleFirebaseError(error);
@@ -93,17 +111,26 @@ async function login(req, res) {
   }
 
   try {
+    // 1. Authenticate with Firebase
     const data = await firebasePost(':signInWithPassword', {
       email,
       password,
       returnSecureToken: true
     });
 
+    // 2. Fetch user from MongoDB
+    const mongoDB = req.app.locals.db;
+    const people = mongoDB.collection('People');
+    const user = await people.findOne({ firebaseUid: data.localId });
+
     return res.status(200).json({ 
-      message: 'Login successful',
-      uid: data.localId,
-      idToken: data.idToken,
-      refreshToken: data.refreshToken
+      message:      'Login successful',
+      uid:          data.localId,
+      userId:       user?._id || null,
+      idToken:      data.idToken,
+      refreshToken: data.refreshToken,
+      userType:     user?.accountType || null,
+      user:         user || null
     });
   } catch (error) {
     const { code, message } = handleFirebaseError(error);
@@ -111,7 +138,7 @@ async function login(req, res) {
   }
 }
 
-// ── Verify Token ───────────────────────────────────
+// ── Verify Token (middleware) ──────────────────────
 async function verifyToken(req, res, next) {
   const token = req.headers.authorization?.split('Bearer ')[1];
 
@@ -136,4 +163,39 @@ async function verifyToken(req, res, next) {
   }
 }
 
-module.exports = { register, login, verifyToken,admin, db, bucket  };
+// ── Refresh Token ─────────────────────────────────
+// Call this from the frontend when idToken expires
+async function refreshIdToken(req, res) {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(400).json({ message: 'Refresh token is required' });
+  }
+
+  try {
+    const response = await fetch(
+      `https://securetoken.googleapis.com/v1/token?key=${API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `grant_type=refresh_token&refresh_token=${refreshToken}`
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return res.status(401).json({ message: data.error?.message || 'Token refresh failed' });
+    }
+
+    return res.status(200).json({
+      idToken:      data.id_token,
+      refreshToken: data.refresh_token,
+      expiresIn:    data.expires_in
+    });
+  } catch (error) {
+    return res.status(500).json({ message: 'Failed to refresh token' });
+  }
+}
+
+module.exports = { register, login, verifyToken, refreshIdToken, admin, db, bucket };
