@@ -93,12 +93,12 @@ router.get('/user/:id', async (req, res) => {
 });
 
 
-rrouter.put('/user/favorites/:id', async (req, res) => { 
+router.put('/user/addfavorites/:id', async (req, res) => { 
   const database = req.app.locals.db;
   const people = database.collection("People"); 
 
   try {
-    const newDog = req.body.profile.id;
+    const newDog = req.body.dogId;
     const query = { "_id": new ObjectId(req.params.id) }; // does this crate  anew id per dog?
 
     // Append the new dog id to liked_dogs

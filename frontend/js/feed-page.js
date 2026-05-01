@@ -64,7 +64,7 @@ profiles.forEach(profile => {
 
       // favorite functionality
       if (isLiking) {
-        await fetch(`http://localhost:3000/api/user/favorites/${userId}`, {
+        await fetch(`http://localhost:3000/api/user/addfavorites/${userId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
