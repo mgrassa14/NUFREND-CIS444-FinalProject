@@ -430,3 +430,34 @@ async function loadProfile() {
   });
 
 loadDogProfile();
+
+// how to add dogs into html based on userType ---------------------------------------------
+// // get unique id from createaccount.html
+// const feedBox = document.getElementById("feed-box");
+// // request dogs for that user
+// const res = await fetch("http://localhost:3000/api/dogs");
+// const profiles = await res.json();
+// // for loop through user's list of all dogs and create cards for each of them
+// profiles.forEach(profile => {
+//     // create div
+//     const card = document.createElement("div");
+//     // give div class names
+//     card.className = "profile snap-start relative w-full h-[33rem] rounded-xl overflow-hidden bg-cover bg-center cursor-pointer transition-transform duration-200 hover:scale-[1.02]";
+//     // set background image
+//     card.style.backgroundImage = `url(${profile.photos[0]})`;
+//     // set inner content ❤️
+//     card.innerHTML = `
+//         <div class="absolute bottom-0 left-0 w-full p-3 bg-gradient-to-t from-black/60 to-transparent text-white">
+//         <div class="name font-bold text-3xl">${profile.name}</div>
+//         </div>
+//         <button class="like absolute top-3 right-3 text-5xl">🤍</button>
+//     `;
+
+//     // redirect on card click -> click to dog's profile
+//     card.addEventListener("click", () => {
+//         window.location.href = `dog-profile-view.html?id=${profile._id}`;
+//     });
+
+//     // add div profile to feed-box and loop again until no more profiles
+//     feedBox.appendChild(card);
+// });

@@ -4,19 +4,8 @@
 document.addEventListener("DOMContentLoaded", async () => {
 
   // set profile link based on user type
-  // const userType = localStorage.getItem("userType");
-  const userType = "adopter";   // hard‑coded for testing
-  const profileLink = document.getElementById("profileLink");
-
-  if (profileLink) {
-    if (userType === "adopter") {
-      profileLink.href = "../views/adopter.html";
-    } else if (userType === "business") {
-      profileLink.href = "../views/business.html";
-    } else {
-      profileLink.href = "../views/loginandsignupview.html";
-    }
-  }
+  const userId = sessionStorage.getItem("userId");
+  
 
   const favBox = document.getElementById("fav-box");
   if (!favBox) return;
@@ -26,7 +15,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // get tokens and userId from localStorage
   // const idToken = getIdToken();
   // const refreshToken = getRefreshToken();
-  const userId = "85c3a4e5f6d2c3456789001a";
+  // const userId = "85c3a4e5f6d2c3456789001a";
 
   // if not logged in, redirect to login
   // if (!idToken || !userId) {
