@@ -68,6 +68,7 @@ router.get('/tstimg', async (req, res) => {
         res.status(500).send("Failed to fetch dog"); 
     }
 });
+
 router.get('/user/:id', async (req, res) => { 
     const database = req.app.locals.db;
     const people = database.collection("People"); 
@@ -92,6 +93,32 @@ router.get('/user/:id', async (req, res) => {
 });
 
 
+rrouter.put('/user/favorites/:id', async (req, res) => { 
+  const database = req.app.locals.db;
+  const people = database.collection("People"); 
+
+  try {
+    const newDog = req.body.profile.id;
+    const query = { "_id": new ObjectId(req.params.id) }; // does this crate  anew id per dog?
+
+    // Append the new dog id to liked_dogs
+    await people.updateOne(query,{ $push: { liked_dogs: newDog },$set:  { updated_at: new Date() }});
+
+    // Fetch AFTER update so response reflects the new state
+    const person = await people.findOne(query, { projection: { _id: 0, liked_dogs: 1 } });
+
+    if (!person) {
+      return res.status(404).send("User not found");
+    }
+
+    console.log(person.liked_dogs);
+    res.status(200).send(person.liked_dogs);
+
+  } catch (err) {
+    console.error(err); 
+    res.status(500).send("Failed to update favorites"); 
+  }
+});
 router.get('/user/favorites/:id', async (req, res) => { 
     const database = req.app.locals.db;
     const people = database.collection("People"); 
