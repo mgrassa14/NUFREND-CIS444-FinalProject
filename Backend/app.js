@@ -6,6 +6,8 @@ const path = require('path');
 
 const app = express();
 
+app.use(express.static(path.join(__dirname, '../frontend')));// serves static files
+
 // ── CORS ───────────────────────────────────────────
 const allowedOrigins = [
   'http://localhost:3000', 
@@ -35,7 +37,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ── Routes ─────────────────────────────────────────
-app.use(express.static(path.join(__dirname, '../frontend')));// serves static files
 app.use('/api', Router);
 // ── Start Server only after DB connects ───────────
 async function startServer() {

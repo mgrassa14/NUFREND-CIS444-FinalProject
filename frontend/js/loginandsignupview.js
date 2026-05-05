@@ -108,7 +108,7 @@ async function handleSubmit(e) {
         // Shelters go to onboarding to fill in address/phone/email
         if (accountType === 'shelter') {
           sessionStorage.setItem('shelterName', nameInput);
-          window.location.href = '/views/shelter-onboarding.html';
+          window.location.href = '/views/createaccount.html';
         } else {
           window.location.href = '/views/feed-page.html';
         }
