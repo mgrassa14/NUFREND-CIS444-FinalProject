@@ -1,6 +1,5 @@
 let currentTab = "login";
 let accountType = "adopter";
-//const { ObjectId } = require('mongodb');
 
 function switchTab(tab) {
   currentTab = tab;
@@ -75,17 +74,11 @@ async function handleSubmit(e) {
       const data = await response.json();// data.idToken is your JWT
 
       if (response.ok) {
-        data.userType = accountType; // Add userType to the response data
-       
-        console.log(data.userId); // Log the generated userId
-        
-        
         sessionStorage.setItem('userId', data.userId);
-        localStorage.setItem("userType", data.userType);
-        
         sessionStorage.setItem('token', data.idToken);
-        localStorage.setItem("refreshToken", data.refreshToken);
-        window.location.href = '/frontend/views/feed-page.html';
+        localStorage.setItem('userType', data.userType);
+        localStorage.setItem('refreshToken', data.refreshToken);
+        window.location.href = '/views/feed-page.html';
       } else {
         alert(data.message || 'Login failed. Please try again.');
       }
@@ -107,22 +100,18 @@ async function handleSubmit(e) {
       const data = await response.json();
 
       if (response.ok) {
-        sessionStorage.setItem('token', data.idToken);
-        data.userType = accountType; // Add userType to the response data
-        console.log(data.userId); // Log the generated userId
- sessionStorage.setItem('name', nameInput);  // ← still missing
-  sessionStorage.setItem('email', email);     // ← still missing
         sessionStorage.setItem('userId', data.userId);
-        localStorage.setItem("userType", data.userType);
-        localStorage.setItem("refreshToken", data.refreshToken);
-          console.log('saving to session:', {
-    userId: data.userId,
-    name: nameInput,
-    email: email
-  });
+        sessionStorage.setItem('token', data.idToken);
+        localStorage.setItem('userType', data.userType);
+        localStorage.setItem('refreshToken', data.refreshToken);
 
-        window.location.href = '/frontend/views/createaccount.html'; // open create account
-      
+        // Shelters go to onboarding to fill in address/phone/email
+        if (accountType === 'shelter') {
+          sessionStorage.setItem('shelterName', nameInput);
+          window.location.href = '/views/shelter-onboarding.html';
+        } else {
+          window.location.href = '/views/feed-page.html';
+        }
       } else {
         alert(data.message || 'Signup failed. Please try again.');
       }

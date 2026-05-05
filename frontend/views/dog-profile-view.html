@@ -5,33 +5,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>PuppyGram – Pet Profile</title>
   <link href="../css/output-main.css" rel="stylesheet"/>
+  <script src="../js/nav.js" defer></script>
   <script src="../js/dog-profile-view.js" defer></script>
-  <style>
+  <!-- <style>
     body { font-family: 'DM Sans', sans-serif; background-color: #f0f0ee; }
     h1, h2 { font-family: 'Lora', serif; }
-  </style>
+  </style> -->
 </head>
 <body class="min-h-screen bg-[#f0f0ee]">
 
   <!-- Hero Image -->
   <div class="w-full flex justify-center pt-8">
-    <div class="w-56 h-56 rounded-2xl overflow-hidden shadow-lg">
+    <div class="w-56 h-56 rounded-2xl overflow-hidden shadow-lg relative">
       <img
         id="dog-image"
         src=""
         alt="Dog photo"
         class="w-full h-full object-cover hidden"
       />
+      <!-- Image-change button (edit mode only) -->
+      <label id="image-upload-btn"
+        class="hidden absolute inset-0 bg-black/40 text-white text-xs font-semibold
+               flex items-center justify-center cursor-pointer hover:bg-black/50 transition">
+        Change Photo
+        <input type="file" accept="image/*" id="image-file-input" class="hidden" />
+      </label>
     </div>
   </div>
 
   <!-- Profile Card -->
   <div class="max-w-2xl mx-auto mt-6 mb-12 bg-white rounded-3xl shadow-sm px-8 py-8">
 
+    <!-- Owner toolbar (edit / save / cancel) -->
+    <div id="owner-toolbar" class="hidden justify-end gap-2 mb-4">
+      <button id="btn-edit"   class="cursor-pointer border-none rounded-xl px-5 py-2 text-sm font-semibold bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" type="button">Edit</button>
+      <button id="btn-cancel" class="hidden cursor-pointer border-none rounded-xl px-5 py-2 text-sm font-semibold bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" type="button">Cancel</button>
+      <button id="btn-save"   class="hidden cursor-pointer border-none rounded-xl px-5 py-2 text-sm font-semibold bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" type="button">Save Changes</button>
+    </div>
+
     <!-- Name & Breed -->
     <div class="mb-6">
       <h1 id="dog-name" class="text-3xl font-bold text-gray-900">...</h1>
-      <p id="dog-breed" class="text-sm text-gray-400 mt-0.5">...</p>
+      <p  id="dog-breed" class="text-sm text-gray-400 mt-0.5">...</p>
     </div>
 
     <!-- Top Stats Grid -->
@@ -96,14 +111,14 @@
     <div class="mb-7">
       <h2 class="text-lg font-bold text-gray-900 mb-3">Health Checks</h2>
       <div class="grid grid-cols-2 gap-3 mb-3">
-        <div id="dog-vaccinated" class="flex items-center gap-2 border border-gray-100 rounded-xl px-3 py-2.5">
+        <div id="dog-vaccinated" class="flex items-center gap-2 border border-gray-100 rounded-xl px-3 py-2.5 cursor-default">
           <svg class="w-4 h-4 shrink-0 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke-width="2" stroke-linecap="round"/>
             <polyline points="22 4 12 14.01 9 11.01" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
           <span class="text-sm text-gray-700">Vaccinated</span>
         </div>
-        <div id="dog-neutered" class="flex items-center gap-2 border border-gray-100 rounded-xl px-3 py-2.5">
+        <div id="dog-neutered" class="flex items-center gap-2 border border-gray-100 rounded-xl px-3 py-2.5 cursor-default">
           <svg class="w-4 h-4 shrink-0 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke-width="2" stroke-linecap="round"/>
             <polyline points="22 4 12 14.01 9 11.01" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -114,10 +129,16 @@
     </div>
 
     <!-- Tags -->
-    <div>
+    <div class="mb-7">
       <h2 class="text-lg font-bold text-gray-900 mb-3">Tags</h2>
       <div id="dog-tags" class="flex flex-wrap gap-3">
         <!-- Tags injected by JS -->
+      </div>
+      <!-- Tag editor (edit mode only) -->
+      <div id="tag-editor" class="hidden mt-3 flex items-center gap-2">
+        <input id="new-tag-input" type="text" placeholder="Add a tag…"
+          class="w-full max-w-[14rem] border border-gray-300 rounded-lg px-2 py-1.5 text-sm bg-gray-50 text-gray-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition-colors" />
+        <button id="add-tag-btn" type="button" class="cursor-pointer border-none rounded-xl px-5 py-2 text-xs font-semibold bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors">+ Add</button>
       </div>
     </div>
   </div>
@@ -131,7 +152,7 @@
       </svg>
       <h2 class="text-lg font-bold text-gray-900">Shelter Information</h2>
     </div>
-    <p id="shelter-name" class="text-sm font-semibold text-gray-900 mb-0.5">...</p>
+    <p id="shelter-name"    class="text-sm font-semibold text-gray-900 mb-0.5">...</p>
     <p id="shelter-address" class="text-xs text-gray-400 mb-4">...</p>
     <div class="space-y-2.5">
       <div class="flex items-center gap-2 text-sm text-gray-600">
@@ -149,5 +170,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-xl text-sm font-semibold text-white opacity-0 transition-opacity duration-300 pointer-events-none z-50"></div>
+
 </body>
 </html>

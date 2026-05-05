@@ -4,20 +4,21 @@
 document.addEventListener("DOMContentLoaded", async () => {
 
   // set profile link based on user type
-  // const userType = localStorage.getItem("userType");
-  const userType = localStorage.getItem("userType");   // hard‑coded for testing
-  console.log(userType);
-  const profileLink = document.getElementById("profileLink");
+  const userType = localStorage.getItem("userType");
+  const userId = sessionStorage.getItem("userId");
+  const idToken = sessionStorage.getItem("token");
+  // const userType = "business";   // hard‑coded for testing
+  // const profileLink = document.getElementById("profileLink");
 
-  if (profileLink) {
-    if (userType === 'adopter') {
-      profileLink.href = "../views/createaccount.html";
-    } else if (userType === 'shelter') {
-      profileLink.href = "../views/business.html";
-    } else {
-      profileLink.href = "../views/loginandsignupview.html";
-    }
-  }
+  // if (profileLink) {
+  //   if (userType === "adopter") {
+  //     profileLink.href = "../views/adopter.html";
+  //   } else if (userType === "business") {
+  //     profileLink.href = "../views/business.html";
+  //   } else {
+  //     profileLink.href = "../views/loginandsignupview.html";
+  //   }
+  // }
 
   const feedBox = document.getElementById("feed-box");
   if (!feedBox) return;
@@ -63,8 +64,8 @@ profiles.forEach(profile => {
 
       // favorite functionality
       if (isLiking) {
-        await fetch(`http://localhost:3000/api/user/favorites/${userId}`, {
-          method: "POST",
+        await fetch(`http://localhost:3000/api/user/addfavorites/${userId}`, {
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${idToken}`
