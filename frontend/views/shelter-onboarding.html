@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="../css/output-main.css" rel="stylesheet">
+  <script src="../js/shelter-onboarding.js" defer></script>
+  <!-- <style>
+    body { font-family: 'DM Sans', sans-serif; background-color: #f0f0ee; }
+    h1, h2 { font-family: 'Lora', serif; }
+  </style> -->
+</head>
+<body class="min-h-screen bg-[#f0f0ee]">
+
+  <div class="min-h-screen flex items-start justify-center py-10 px-4">
+  <div class="w-full max-w-md bg-white rounded-3xl shadow-sm px-8 py-10">
+
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold text-blue-600 mb-1">NUFREND</h1>
+      <h2 class="text-xl font-bold text-gray-900 mt-4">Set Up Your Shelter</h2>
+      <p class="text-sm text-gray-400 mt-1">Just a few more details so adopters can find you</p>
+    </div>
+
+    <!-- Shelter Name (read-only, pre-populated) -->
+    <div class="mb-4">
+      <label class="block text-xs text-gray-400 uppercase tracking-wide mb-1">Shelter Name</label>
+      <input
+        id="input-name"
+        type="text"
+        readonly
+        class="w-full border border-gray-100 bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-800 font-semibold outline-none"
+      />
+    </div>
+
+    <!-- Address -->
+    <div class="mb-4">
+      <label class="block text-xs text-gray-400 uppercase tracking-wide mb-1">Address</label>
+      <input
+        id="input-address"
+        type="text"
+        placeholder="123 Main Street, City, State ZIP"
+        class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800 outline-none focus:border-blue-500 transition-colors"
+      />
+    </div>
+
+    <!-- Phone -->
+    <div class="mb-4">
+      <label class="block text-xs text-gray-400 uppercase tracking-wide mb-1">Phone Number</label>
+      <input
+        id="input-phone"
+        type="tel"
+        placeholder="(555) 123-4567"
+        class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800 outline-none focus:border-blue-500 transition-colors"
+      />
+    </div>
+
+    <!-- Contact Email -->
+    <div class="mb-8">
+      <label class="block text-xs text-gray-400 uppercase tracking-wide mb-1">Contact Email</label>
+      <input
+        id="input-email"
+        type="email"
+        placeholder="contact@shelter.com"
+        class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800 outline-none focus:border-blue-500 transition-colors"
+      />
+    </div>
+
+    <!-- Submit -->
+    <button
+      id="submit-btn"
+      type="button"
+      class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl py-3 text-sm transition-colors cursor-pointer"
+    >
+      Complete Setup
+    </button>
+
+    <!-- Skip -->
+    <button
+      id="skip-btn"
+      type="button"
+      class="w-full mt-3 text-gray-400 hover:text-gray-600 text-sm font-medium cursor-pointer transition-colors"
+    >
+      Skip for now
+    </button>
+
+    <!-- Error message -->
+    <p id="error-msg" class="text-red-500 text-sm text-center mt-4 hidden"></p>
+
+  </div>
+  </div>
+
+</body>
+</html>

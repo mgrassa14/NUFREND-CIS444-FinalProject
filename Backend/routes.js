@@ -1,309 +1,391 @@
 const express = require('express');
 const router = express.Router();
 const { ObjectId } = require('mongodb');
-const { register, login, verifyToken } = require('./firebase');
-const { bucket } = require('./firebase'); // or wherever your config is
-const axios = require('axios');
+const { verifyToken } = require('./firebase');
+const { bucket } = require('./firebase');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
 
 // ────────────────────────────────────
-router.post('/register', register);
+//  Auth
+// ────────────────────────────────────
 
-router.post('/login', login);
+// Signup — creates Firebase account + People doc in MongoDB
+router.post('/register', async (req, res) => {
+  const { name, email, password, accountType } = req.body;
 
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and password are required' });
+  }
 
+  try {
+    // 1. Create Firebase auth account
+    const fbRes = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${process.env.API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, returnSecureToken: true })
+      }
+    );
+    const fbData = await fbRes.json();
+    if (!fbRes.ok) {
+      const msg = fbData?.error?.message || 'Firebase signup failed';
+      return res.status(400).json({ message: msg });
+    }
+
+    // 2. Create document in the correct MongoDB collection
+    const collectionName = accountType === 'shelter' ? 'business' : 'People';
+    const collection = req.app.locals.db.collection(collectionName);
+    const newUser = {
+      name:        name || '',
+      email,
+      firebaseUid: fbData.localId,
+      accountType: accountType || 'adopter',
+      created_at:  new Date(),
+      updated_at:  new Date()
+    };
+
+    // Adopters get a liked_dogs array, shelters get a dogs array
+    if (accountType === 'shelter') {
+      newUser.dogs = [];
+    } else {
+      newUser.liked_dogs = [];
+    }
+
+    const result = await collection.insertOne(newUser);
+
+    // 3. Return token + real Mongo _id
+    res.status(201).json({
+      message:      'User created successfully',
+      userId:       result.insertedId.toString(),
+      userType:     accountType,
+      idToken:      fbData.idToken,
+      refreshToken: fbData.refreshToken
+    });
+
+  } catch (err) {
+    console.error('Signup error:', err);
+    res.status(500).json({ message: 'Signup failed' });
+  }
+});
+
+// Login — authenticates with Firebase + looks up Mongo _id
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and password are required' });
+  }
+
+  try {
+    // 1. Authenticate with Firebase
+    const fbRes = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, returnSecureToken: true })
+      }
+    );
+    const fbData = await fbRes.json();
+    if (!fbRes.ok) {
+      const msg = fbData?.error?.message || 'Login failed';
+      return res.status(400).json({ message: msg });
+    }
+
+    // 2. Look up user by Firebase UID — check both collections
+    const db = req.app.locals.db;
+    let user = await db.collection('People').findOne({ firebaseUid: fbData.localId });
+    if (!user) {
+      user = await db.collection('business').findOne({ firebaseUid: fbData.localId });
+    }
+
+    if (!user) {
+      return res.status(404).json({ message: 'No account found — please sign up first' });
+    }
+
+    // 3. Return token + real Mongo _id + account type
+    res.status(200).json({
+      message:      'Login successful',
+      userId:       user._id.toString(),
+      userType:     user.accountType,
+      idToken:      fbData.idToken,
+      refreshToken: fbData.refreshToken
+    });
+
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ message: 'Login failed' });
+  }
+});
+
+// ────────────────────────────────────
+//  Health check
+// ────────────────────────────────────
 router.get('/', (req, res) => {
   res.send('server is running!');
 });
 
-
-router.get('/dogs', async (req, res) => { 
-    const database = req.app.locals.db;
-    const dogs = database.collection("Dogs"); 
-
-    try {
-        const query = {_id:1, name: 1,photos:1};
-        const dog = await dogs.find().project(query).toArray(); 
-
-        if (!dog) {
-            return res.status(404).send("Dogs not found");
-        }
-
-        console.log(dog);
-        res.status(200).send(dog);
-    } 
-    catch (err) {
-        console.error(err); 
-        res.status(500).send("Failed to fetch dog"); 
-    }
-});
-
-router.get('/tstimg', async (req, res) => { 
-    const database = req.app.locals.db;
-    const dogs = database.collection("Dogs"); 
-
-   
-        const dogid = "85c3a4e5f6d2c3456789001a";
-
-
-    
-});
-
-router.get('/tstimg', async (req, res) => { 
-    const database = req.app.locals.db;
-    const dogs = database.collection("Dogs"); 
-
-    try {
-        const query = {_id:1, name: 1,photos:1};
-        const dog = await dogs.find().project(query).toArray(); 
-
-        if (!dog) {
-            return res.status(404).send("Dogs not found");
-        }
-
-        console.log(dog);
-        res.status(200).send(dog);
-    } 
-    catch (err) {
-        console.error(err); 
-        res.status(500).send("Failed to fetch dog"); 
-    }
-});
-
-router.get('/user/:id', async (req, res) => { 
-    const database = req.app.locals.db;
-    const people = database.collection("People"); 
-
-    try {
-        const query = { "_id": new ObjectId(req.params.id) };
-        
-        const person = await people.findOne(query); 
-
-        if (!person) {
-            return res.status(404).send("user not found");
-
-        }
-
-        console.log(person);
-        res.status(200).send(person);
-    } 
-    catch (err) {
-        console.error(err); 
-        res.status(500).send("Failed to fetch account"); 
-    }
-});
-
-
-router.put('/user/addfavorites/:id', async (req, res) => { 
-  const database = req.app.locals.db;
-  const people = database.collection("People"); 
-
+// ────────────────────────────────────
+//  Dogs – list
+// ────────────────────────────────────
+router.get('/dogs', async (req, res) => {
+  const dogs = req.app.locals.db.collection('Dogs');
   try {
-    const newDog = req.body.dogId;
-    const query = { "_id": new ObjectId(req.params.id) }; // does this crate  anew id per dog?
+    const results = await dogs
+      .find()
+      .project({ _id: 1, name: 1, photos: 1 })
+      .toArray();
 
-    // Append the new dog id to liked_dogs
-    await people.updateOne(query,{ $push: { liked_dogs: newDog },$set:  { updated_at: new Date() }});
+    if (!results.length) return res.status(404).send('No dogs found');
 
-    // Fetch AFTER update so response reflects the new state
-    const person = await people.findOne(query, { projection: { _id: 0, liked_dogs: 1 } });
-
-    if (!person) {
-      return res.status(404).send("User not found");
-    }
-
-    console.log(person.liked_dogs);
-    res.status(200).send(person.liked_dogs);
-
+    res.status(200).json(results);
   } catch (err) {
-    console.error(err); 
-    res.status(500).send("Failed to update favorites"); 
-  }
-});
-router.get('/user/favorites/:id', async (req, res) => { 
-    const database = req.app.locals.db;
-    const people = database.collection("People"); 
-
-    try {
-        const query = {"_id": new ObjectId(req.params.id)};
-        
-        const projectfield = { _id:0 , liked_dogs: 1 };//{ "_id": new ObjectId(req.params.id) };
-        const personlikes = await people.find(query).project(projectfield).toArray();//await people.findOne(query).project(projectfield); 
-
-        if (!personlikes) {
-            return res.status(404).send("user not found/ favorites not found");
-        }
-        console.log(personlikes);
-        res.status(200).send(personlikes);
-    } 
-    catch (err) {
-        console.error(err); 
-        res.status(500).send("Failed to fetch account liked"); 
-    }
-});
-
-
-router.get('/Vuser/:id', verifyToken, async (req, res) => {
-  const people = req.app.locals.db.collection("People");
-  try {
-    const person = await people.findOne({ "_id": new ObjectId(req.params.id) });
-    if (!person) return res.status(404).send("User not found");
-    res.status(200).send(person);
-  } catch (err) {
-    res.status(500).send("Failed to fetch account");
+    console.error(err);
+    res.status(500).send('Failed to fetch dogs');
   }
 });
 
-// router.get('/Vdogprofile/:id', verifyToken, async (req, res) => {
-//   const dogs = req.app.locals.db.collection("Dogs");
-//   try {
-//     const dog = await dogs.findOne({ "_id": new ObjectId(req.params.id) });
-//     if (!dog) return res.status(404).send("Dog not found");
-//     res.status(200).send(dog);
-//   } catch (err) {
-//     res.status(500).send("Failed to fetch dog");
-//   }
-// });
-
-// router.get('/Vdogprofile/:id',verifyToken, async (req, res) => {
-//   const dogs = req.app.locals.db.collection("Dogs");
-//   try {
-   
-//  const dog = await dogs.findOne({ "_id": new ObjectId(req.params.id) });
-//    if (!dog) return res.status(404).send("Dog not found");
-//     res.status(200).send(dog);
-//      res.setHeader('Content-Type', 'image/jpeg');
-
-//     res.setHeader('Transfer-Encoding', 'chunked');
-  
-//     const file = bucket.file(`test image.jpg`);
-
-//     const stream = file.createReadStream();
-
-//     stream.on('error', () => res.status(404).send("Image not found"));
-//     res.setHeader('Content-Type', 'image/jpeg');
-//     stream.pipe(res);
-
-//   } catch (err) {
-//     res.status(500).send("Failed to fetch dog");
-//   }
-// });
-
-// router.get('/Vdogprofile/:id', verifyToken, async (req, res) => {
-//   const dogs = req.app.locals.db.collection("Dogs");
-//   try {
-//     const dog = await dogs.findOne({ "_id": new ObjectId(req.params.id) });
-//     if (!dog) return res.status(404).send("Dog not found");
-
-//     // read image into buffer then convert to base64
-//     const file = bucket.file(`test image.jpg`);
-//     const [exists] = await file.exists();
-    
-//     let imageBase64 = null;
-//     if (exists) {
-//       const [buffer] = await file.download();
-//       imageBase64 = buffer.toString('base64');
-//     }
-
-//     // send dog data + image together as JSON
-//     res.status(200).json({
-//       ...dog,
-//       image: imageBase64 ? `data:image/jpeg;base64,${imageBase64}` : null
-//     });
-
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).send("Failed to fetch dog");
-//   }
-// });
-
-
+// ────────────────────────────────────
+//  Dog profile – GET (public, with optional ownership flag)
+// ────────────────────────────────────
 router.get('/dogprofile/:id', async (req, res) => {
-  const dogs = req.app.locals.db.collection("Dogs");
+  const dogs = req.app.locals.db.collection('Dogs');
   try {
-    const dog = await dogs.findOne({ "_id": new ObjectId(req.params.id) });
-    if (!dog) return res.status(404).send("Dog not found");
-    res.status(200).json(dog);
+    const dog = await dogs.findOne({ _id: new ObjectId(req.params.id) });
+    if (!dog) return res.status(404).send('Dog not found');
+
+    // Ownership check — try to read the auth token if one was sent.
+    // If it's valid and the user's ID matches the dog's shelterId we
+    // set isOwner = true so the frontend knows to show the Edit button.
+    let isOwner = false;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const { getAuth } = require('firebase-admin/auth');
+        const token = authHeader.split(' ')[1];
+        const decoded = await getAuth().verifyIdToken(token);
+
+        // The shelter (business doc) has a `dogs` array of ObjectIds.
+        // If the logged-in user's dogs array contains this dog, they own it.
+        const people = req.app.locals.db.collection('People');
+        const business = req.app.locals.db.collection('business');
+        let user = await people.findOne({ firebaseUid: decoded.uid });
+        if (!user) {
+          user = await business.findOne({ firebaseUid: decoded.uid });
+        }
+        if (user && user.dogs && user.dogs.some(id => id.equals(dog._id))) {
+          isOwner = true;
+        }
+      } catch (_) {
+        // Token invalid or expired — just serve public view
+      }
+    }
+
+    res.status(200).json({ ...dog, isOwner });
   } catch (err) {
-    res.status(500).send("Failed to fetch dog");
+    console.error(err);
+    res.status(500).send('Failed to fetch dog');
   }
 });
 
+// ────────────────────────────────────
+//  Dog profile – UPDATE (auth required)
+// ────────────────────────────────────
+router.put('/dogprofile/:id', verifyToken, async (req, res) => {
+  const dogs = req.app.locals.db.collection('Dogs');
+  try {
+    const allowedFields = [
+      'name', 'breed', 'age', 'weight', 'energy',
+      'gender', 'color', 'description',
+      'vaccinated', 'neutered', 'tags'
+    ];
 
+    const updates = {};
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) {
+        updates[field] = req.body[field];
+      }
+    }
+    updates.updated_at = new Date();
+
+    await dogs.updateOne(
+      { _id: new ObjectId(req.params.id) },
+      { $set: updates }
+    );
+
+    const updated = await dogs.findOne({ _id: new ObjectId(req.params.id) });
+    res.status(200).json(updated);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Failed to update dog profile');
+  }
+});
+
+// ────────────────────────────────────
+//  Dog profile – PHOTO upload (auth required)
+// ────────────────────────────────────
+router.put('/dogprofile/:id/photo', verifyToken, upload.single('photo'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).send('No photo provided');
+
+    const dogId = req.params.id;
+    const filename = `${Date.now()}_${req.file.originalname}`;
+    const filePath = `dogs/${dogId}/${filename}`;
+    const file = bucket.file(filePath);
+
+    await file.save(req.file.buffer, {
+      metadata: { contentType: req.file.mimetype }
+    });
+
+    await file.makePublic();
+    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
+
+    // Push the new URL to the photos array
+    const dogs = req.app.locals.db.collection('Dogs');
+    await dogs.updateOne(
+      { _id: new ObjectId(dogId) },
+      { $set: { 'photos.0': publicUrl, updated_at: new Date() } }
+    );
+
+    res.status(200).json({ url: publicUrl });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Failed to upload photo');
+  }
+});
+
+// ────────────────────────────────────
+//  Dog profile image – GET (auth required)
+// ────────────────────────────────────
 router.get('/Vdogprofile/:id/image/:filename', verifyToken, async (req, res) => {
   try {
     const file = bucket.file(`dogs/${req.params.id}/${req.params.filename}`);
     const [exists] = await file.exists();
-    if (!exists) return res.status(404).send("Image not found");
+    if (!exists) return res.status(404).send('Image not found');
 
     res.setHeader('Content-Type', 'image/jpeg');
     const stream = file.createReadStream();
-    stream.on('error', () => res.status(404).send("Image not found"));
+    stream.on('error', () => res.status(404).send('Image not found'));
     stream.pipe(res);
   } catch (err) {
-    res.status(500).send("Failed to fetch image");
+    res.status(500).send('Failed to fetch image');
   }
 });
 
+// ────────────────────────────────────
+//  Users
+// ────────────────────────────────────
+router.get('/user/:id', async (req, res) => {
+  const people = req.app.locals.db.collection('People');
+  try {
+    const person = await people.findOne({ _id: new ObjectId(req.params.id) });
+    if (!person) return res.status(404).send('User not found');
 
-// // POST /api/login
-// router.post('/login',login, async (req, res) => {
-//   const { email, password } = req.body;
+    res.status(200).json(person);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Failed to fetch account');
+  }
+});
 
-//   try {
-//     const db = req.app.locals.db;
-//     const people = db.collection('People');
+router.get('/Vuser/:id', verifyToken, async (req, res) => {
+  const people = req.app.locals.db.collection('People');
+  try {
+    const person = await people.findOne({ _id: new ObjectId(req.params.id) });
+    if (!person) return res.status(404).send('User not found');
 
-//     // Find user by email
-//     const user = await people.findOne({ email });
+    res.status(200).json(person);
+  } catch (err) {
+    res.status(500).send('Failed to fetch account');
+  }
+});
 
-//     if (!user) {
-//       return res.status(404).json({ message: 'No account found with that email' });
-//     }
+// ────────────────────────────────────
+//  Favorites
+// ────────────────────────────────────
+router.get('/user/favorites/:id', async (req, res) => {
+  const people = req.app.locals.db.collection('People');
+  try {
+    const person = await people.findOne(
+      { _id: new ObjectId(req.params.id) },
+      { projection: { _id: 0, liked_dogs: 1 } }
+    );
+    if (!person) return res.status(404).send('User not found');
 
-//     // Check password (plain text for now — we can add hashing later)
-//     if (user.password !== password) {
-//       return res.status(401).json({ message: 'Incorrect password' });
-//     }
+    res.status(200).json(person.liked_dogs || []);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Failed to fetch favorites');
+  }
+});
 
-//     res.status(200).json({ message: 'Login successful', user });
+router.put('/user/addfavorites/:id', async (req, res) => {
+  const people = req.app.locals.db.collection('People');
+  try {
+    const query = { _id: new ObjectId(req.params.id) };
 
-//   } catch (err) {
-//     console.error('Login error:', err.message);
-//     res.status(500).json({ error: 'Failed to login' });
-//   }
-// });
+    await people.updateOne(query, {
+      $push: { liked_dogs: req.body.dogId },
+      $set: { updated_at: new Date() }
+    });
 
-// // POST /api/signup
-// router.post('/signup', async (req, res) => {
-//   const { name, email, password, accountType } = req.body;
+    const person = await people.findOne(query, {
+      projection: { _id: 0, liked_dogs: 1 }
+    });
+    if (!person) return res.status(404).send('User not found');
 
-//   try {
-//     const db = req.app.locals.db;
-//     const people = db.collection('People');
+    res.status(200).json(person.liked_dogs);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Failed to update favorites');
+  }
+});
 
-//     // Check if email already exists
-//     const existing = await people.findOne({ email });
-//     if (existing) {
-//       return res.status(400).json({ message: 'Email already in use' });
-//     }
+// ────────────────────────────────────
+//  Business / Shelter profile – UPDATE
+// ────────────────────────────────────
+router.put('/business/:id', verifyToken, async (req, res) => {
+  const db = req.app.locals.db;
+  const business = db.collection('business');
+  const dogs = db.collection('Dogs');
 
-//     // Insert new user into People collection
-//     const newUser = {
-//       name,
-//       email,
-//       password,   // plain text for now — we can add hashing later
-//       accountType,
-//       createdAt: new Date()
-//     };
+  try {
+    const { address, phone, email } = req.body;
 
-//     const result = await people.insertOne(newUser);
+    const updates = { updated_at: new Date() };
+    if (address) updates.address = address;
+    if (phone)   updates.phone   = phone;
+    if (email)   updates.contactEmail = email;
 
-//     res.status(201).json({ message: 'Signup successful', userId: result.insertedId });
+    await business.updateOne(
+      { _id: new ObjectId(req.params.id) },
+      { $set: updates }
+    );
 
-//   } catch (err) {
-//     console.error('Signup error:', err.message);
-//     res.status(500).json({ error: 'Failed to create account' });
-//   }
-// });
+    const updated = await business.findOne({ _id: new ObjectId(req.params.id) });
+
+    // Propagate shelter info to all dogs this shelter owns
+    if (updated && updated.dogs && updated.dogs.length > 0) {
+      const shelterInfo = {
+        name:    updated.name || '',
+        address: updated.address || '',
+        phone:   updated.phone || '',
+        email:   updated.contactEmail || ''
+      };
+
+      await dogs.updateMany(
+        { _id: { $in: updated.dogs } },
+        { $set: { shelter: shelterInfo, updated_at: new Date() } }
+      );
+    }
+
+    res.status(200).json(updated);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Failed to update shelter profile');
+  }
+});
 
 module.exports = router;
