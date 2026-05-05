@@ -14,7 +14,7 @@
 <body class="min-h-screen bg-[#f0f0ee]">
 
   <!-- Hero Image -->
-  <div class="w-full flex justify-center pt-8">
+  <!-- <div class="w-full flex justify-center pt-8">
     <div class="w-56 h-56 rounded-2xl overflow-hidden shadow-lg">
       <img
         id="profile-image"
@@ -23,40 +23,96 @@
         class="w-full h-full object-cover hidden"
       />
     </div>
+  </div> -->
+<!-- Hero Image -->
+<div class="w-full flex justify-center pt-8 mb-6">
+  <div class="relative w-56 h-56 rounded-2xl overflow-hidden shadow-lg cursor-pointer"
+       onclick="document.getElementById('photo-upload').click()">
+    <img
+      id="profile-image"
+      src=""
+      alt="Profile photo"
+      class="w-full h-full object-cover"
+    />
+    <!-- Empty state placeholder when no image -->
+    <div id="photo-placeholder" class="absolute inset-0 bg-gray-100 flex flex-col items-center justify-center gap-2">
+      <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke-width="2"/>
+        <circle cx="12" cy="13" r="4" stroke-width="2"/>
+      </svg>
+      <p class="text-xs text-gray-400">Add photo</p>
+    </div>
+    <!-- Hover overlay -->
+    <div class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition">
+      <!-- <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke-width="2"/>
+        <circle cx="12" cy="13" r="4" stroke-width="2"/>
+      </svg> -->
+    </div>
   </div>
-
+  
+  <!-- Hidden file input -->
+  <input id="photo-upload" type="file" accept="image/*" class="hidden" />
+</div>
+ 
+]
+</div>
   <!-- Profile Card -->
   <div class="max-w-2xl mx-auto mt-6 mb-12 bg-white rounded-3xl shadow-sm px-8 py-8">
-
+  
     <!-- Name & Breed -->
     <div class="mb-6">
-        <h1 id="user-name" class="text-3xl font-bold text-gray-900">...</h1>
-        <p id="shelter-address" class="text-xs text-gray-400 mb-4">...</p>
-        <!-- About -->
-        <div class="mb-7">
-            <h2 id="about-you-heading" class="text-lg font-bold text-gray-900 mb-2">About</h2>
-            <p id="dog-description" class="text-sm text-gray-500 leading-relaxed">...</p>
+      <input id="user-name" type="text"
+        class="text-3xl font-bold text-gray-900 w-full border-b border-transparent hover:border-gray-300 focus:border-blue-400 focus:outline-none bg-transparent mb-1"
+        placeholder="Your name" />
+ <!-- Location -->
+<div class="flex items-center gap-2 text-sm text-gray-600">
+  <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z" stroke-width="2"/>
+    <circle cx="12" cy="10" r="3" stroke-width="2"/>
+  </svg>
+  <div class="flex gap-3 flex-1">
+    <input id="person-city"  type="text" maxlength="50" placeholder="City"
+      class="w-32 border-b border-transparent hover:border-gray-300 focus:border-blue-400 focus:outline-none bg-transparent" />
+    <input id="person-state" type="text" maxlength="2"  placeholder="ST"
+      class="w-8 border-b border-transparent hover:border-gray-300 focus:border-blue-400 focus:outline-none bg-transparent uppercase text-center" />
+    <input id="person-zip"   type="text" maxlength="5"  placeholder="Zip"
+      class="w-14 border-b border-transparent hover:border-gray-300 focus:border-blue-400 focus:outline-none bg-transparent" />
+  </div>
+</div>
+       <div class="space-y-2.5">
+        <div class="flex items-center gap-2 text-sm text-gray-600">
+          <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3 2.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z"
+              stroke-width="2" />
+          </svg>
+          <input id="user-phone" type="tel"
+            class="flex-1 border-b border-transparent hover:border-gray-300 focus:border-blue-400 focus:outline-none bg-transparent"
+            placeholder="Phone number" />
+        </div> 
+        <div class="flex items-center gap-2 text-sm text-gray-600">
+          <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke-width="2" />
+            <polyline points="22,6 12,13 2,6" stroke-width="2" />
+          </svg>
+          <input id="user-email" type="email"
+            class="flex-1 border-b border-transparent hover:border-gray-300 focus:border-blue-400 focus:outline-none bg-transparent"
+            placeholder="Email address" />
+          <!-- <p id="contact info" class="text-sm text-gray-400 mt-0.5">...</p>
+           <p id="address" class="text-sm text-gray-400 mt-0.5">...</p> -->
         </div>
-        <div class="space-y-2.5">
-            <div class="flex items-center gap-2 text-sm text-gray-600">
-                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3 2.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z"
-                        stroke-width="2" />
-                </svg>
-                <span id="user-phone">...</span>
-            </div>
-            <div class="flex items-center gap-2 text-sm text-gray-600">
-                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
-                        stroke-width="2" />
-                    <polyline points="22,6 12,13 2,6" stroke-width="2" />
-                </svg>
-                <span id="user-email">...</span>
-                <!-- <p id="contact info" class="text-sm text-gray-400 mt-0.5">...</p>
-         <p id="address" class="text-sm text-gray-400 mt-0.5">...</p> -->
-            </div>
-        </div>
+      </div>
+  
+      <!-- About -->
+      <div class="mb-7">
+        <h2 id="about-you-heading" class="text-lg font-bold text-gray-900 mb-2">About</h2>
+  
+        <textarea id="user-bio" rows="3"
+          class="text-sm text-gray-500 leading-relaxed w-full border-b border-transparent hover:border-gray-300 focus:border-blue-400 focus:outline-none bg-transparent resize-none"
+          placeholder="Tell us about yourself..."></textarea>
+      </div>
+     
     </div>
   </div>
   
@@ -67,7 +123,7 @@
   <!-- Shelter Info Card -->
   <div class="max-w-2xl mx-auto mb-12 bg-white rounded-3xl shadow-sm px-8 py-6"> 
     
-<h2 id="about-you-heading" class="text-lg font-bold text-gray-900 mb-2">Tell us about your ideal frend</h2>
+<h2 id="about-your-frend" class="text-lg font-bold text-gray-900 mb-2">Tell us about your ideal frend</h2>
 
   
     <!-- Top Stats Grid -->
