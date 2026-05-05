@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // If not logged in, redirect to login
   if (!userId || !token) {
-    window.location.href = './loginandsignup.html';
+    window.location.href = './loginandsignupview.html';
     return;
   }
 

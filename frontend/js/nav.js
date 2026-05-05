@@ -46,7 +46,7 @@
       sessionStorage.clear();
       localStorage.removeItem('userType');
       localStorage.removeItem('refreshToken');
-      window.location.href = './loginandsignup.html';
+      window.location.href = './loginandsignupview.html';
     });
   }
 })();
