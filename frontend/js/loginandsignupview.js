@@ -1,6 +1,6 @@
 let currentTab = "login";
 let accountType = "adopter";
-const { ObjectId } = require('mongodb');
+//const { ObjectId } = require('mongodb');
 
 function switchTab(tab) {
   currentTab = tab;
@@ -107,19 +107,22 @@ async function handleSubmit(e) {
       const data = await response.json();
 
       if (response.ok) {
-        const newId = new ObjectId(); // client side mongo id generated for session storage, will be used to fetch user data in feed page
         sessionStorage.setItem('token', data.idToken);
-        
-        
         data.userType = accountType; // Add userType to the response data
-        data.userId = newId.toString(); // Assign a new ObjectId as userId
         console.log(data.userId); // Log the generated userId
-        
-        
+ sessionStorage.setItem('name', nameInput);  // ← still missing
+  sessionStorage.setItem('email', email);     // ← still missing
         sessionStorage.setItem('userId', data.userId);
         localStorage.setItem("userType", data.userType);
         localStorage.setItem("refreshToken", data.refreshToken);
-        window.location.href = '/frontend/views/feed-page.html';
+          console.log('saving to session:', {
+    userId: data.userId,
+    name: nameInput,
+    email: email
+  });
+
+        window.location.href = '/frontend/views/createaccount.html'; // open create account
+      
       } else {
         alert(data.message || 'Signup failed. Please try again.');
       }
@@ -129,10 +132,3 @@ async function handleSubmit(e) {
     }
   }
 }
-
-
-// to handle login 
-// localStorage.setItem("idToken", data.idToken);
-// localStorage.setItem("refreshToken", data.refreshToken);
-// localStorage.setItem("userId", data.userId);
-// localStorage.setItem("userType", data.userType);

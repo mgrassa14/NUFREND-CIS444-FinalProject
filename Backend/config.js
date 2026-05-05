@@ -3,7 +3,11 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const client = new MongoClient(process.env.DATABASE_URL, {
   serverApi: { version: ServerApiVersion.v1, strict: true,deprecationErrors: true,}
 });
+const multer = require('multer');
 
+const upload = multer({
+  storage: multer.memoryStorage()
+});
 
 const firebaseConfig = {
    apiKey:"AIzaSyA4lNVzdOmy8lyd1qAKmoMB7Kx8h8JZ2c0",

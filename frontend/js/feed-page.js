@@ -5,13 +5,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // set profile link based on user type
   // const userType = localStorage.getItem("userType");
-  const userType = "business";   // hard‑coded for testing
+  const userType = localStorage.getItem("userType");   // hard‑coded for testing
+  console.log(userType);
   const profileLink = document.getElementById("profileLink");
 
   if (profileLink) {
-    if (userType === "adopter") {
-      profileLink.href = "../views/adopter.html";
-    } else if (userType === "business") {
+    if (userType === 'adopter') {
+      profileLink.href = "../views/createaccount.html";
+    } else if (userType === 'shelter') {
       profileLink.href = "../views/business.html";
     } else {
       profileLink.href = "../views/loginandsignupview.html";

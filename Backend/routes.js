@@ -1,9 +1,11 @@
-const express = require('express');
+ const express = require('express');
 const router = express.Router();
 const { ObjectId } = require('mongodb');
-const { register, login, verifyToken } = require('./firebase');
-const { bucket } = require('./firebase'); // or wherever your config is
+const { register, login, verifyToken,bucket,uploadImage } = require('./firebase');
+// const { bucket } = require('./firebase'); // or wherever your config is
 const axios = require('axios');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
 
 // ────────────────────────────────────
 router.post('/register', register);
@@ -15,6 +17,88 @@ router.get('/', (req, res) => {
   res.send('server is running!');
 });
 
+router.post('/user/create-profile', async (req, res) => {
+  const database = req.app.locals.db;
+  const people = database.collection('People');
+
+  try {
+    const {
+      _id,
+      name,
+      bio,
+      email,
+      phone,
+      location,
+      preferences,
+      liked_dogs,
+      passed_dogs,
+    } = req.body;
+
+    // Basic validation server-side
+    if (!_id || !name || !email) {
+      return res.status(400).json({ message: 'Missing required fields: _id, name, or email' });
+    }
+
+    // Check if user already exists
+    const existing = await people.findOne({ _id: _id });
+    if (existing) {
+      return res.status(409).json({ message: 'User already exists' });
+    }
+
+    const newPerson = {
+      "_id": _id,
+      name,
+      bio:        bio || '',
+      email,
+      phone:      phone || '',
+      image_url:  '',           // updated separately via upload
+      location:   location || {},
+      preferences: preferences || {},
+      liked_dogs:  liked_dogs  || [],
+      passed_dogs: passed_dogs || [],
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+
+    const result = await people.insertOne(newPerson);
+
+    res.status(201).json({ message: 'Profile created', insertedId: result.insertedId });
+
+  } catch (err) {
+    console.error('Error creating profile:', err);
+    res.status(500).json({ message: 'Failed to create profile' });
+  }
+});
+
+router.post('/user/upload-image', upload.single('image'), uploadImage);
+
+router.patch('/user/update-image', async (req, res) => {
+  const database = req.app.locals.db;
+  const people = database.collection('People');
+
+  try {
+    const { unique_id, image_url } = req.body;
+
+    if (!unique_id || !image_url) {
+      return res.status(400).json({ message: 'Missing unique_id or image_url' });
+    }
+
+    const result = await people.updateOne(
+      { unique_id },
+      { $set: { image_url, updated_at: new Date() } }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({ message: 'Image updated', image_url });
+
+  } catch (err) {
+    console.error('Error updating image:', err);
+    res.status(500).json({ message: 'Failed to update image' });
+  }
+});
 
 router.get('/dogs', async (req, res) => { 
     const database = req.app.locals.db;
@@ -74,7 +158,7 @@ router.get('/user/:id', async (req, res) => {
     const people = database.collection("People"); 
 
     try {
-        const query = { "_id": new ObjectId(req.params.id) };
+        const query = { "_id": req.params.id };
         
         const person = await people.findOne(query); 
 
@@ -93,12 +177,12 @@ router.get('/user/:id', async (req, res) => {
 });
 
 
-rrouter.put('/user/favorites/:id', async (req, res) => { 
+router.put('/user/favorites/:id', async (req, res) => { 
   const database = req.app.locals.db;
   const people = database.collection("People"); 
 
   try {
-    const newDog = req.body.profile.id;
+    const newDog = req.body.dogId;
     const query = { "_id": new ObjectId(req.params.id) }; // does this crate  anew id per dog?
 
     // Append the new dog id to liked_dogs
@@ -119,6 +203,8 @@ rrouter.put('/user/favorites/:id', async (req, res) => {
     res.status(500).send("Failed to update favorites"); 
   }
 });
+
+
 router.get('/user/favorites/:id', async (req, res) => { 
     const database = req.app.locals.db;
     const people = database.collection("People"); 
