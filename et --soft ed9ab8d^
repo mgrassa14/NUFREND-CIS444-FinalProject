@@ -1,0 +1,30 @@
+* [33mf438f06[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Clean commit without secrets
+* [33med9ab8d[m issues with redirecting after logging in
+*   [33m7aaa106[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Merge pull request #55 from mgrassa14/backend
+[32m|[m[33m\[m  
+[32m|[m *   [33m23857b2[m Merge branch 'main' into backend
+[32m|[m [34m|[m[32m\[m  
+[32m|[m [34m|[m[32m/[m  
+[32m|[m[32m/[m[34m|[m   
+* [34m|[m   [33m54d394f[m Merge pull request #54 from mgrassa14/make-dogs-editable-by-shleter
+[36m|[m[1;31m\[m [34m\[m  
+[36m|[m * [34m|[m [33m567575c[m Changed style
+[36m|[m * [34m|[m [33mee7d189[m Added shelter onboarding page and flow
+[36m|[m * [34m|[m [33m062ceaf[m Edit dogs only the shelter that owns them
+[36m|[m[36m/[m [34m/[m  
+* [34m|[m [33mc91bbbb[m issue with added favorite dog
+* [34m|[m   [33mc24e1f2[m Merge pull request #53 from mgrassa14/backend
+[1;32m|[m[1;33m\[m [34m\[m  
+* [1;33m|[m [34m|[m [33m5435d88[m added logout button
+* [1;33m|[m [34m|[m [33mc2a1415[m updated profile htrf in htmls, added references for creataccount.js, and updated feed and fac pages js
+* [1;33m|[m [34m|[m   [33ma37dcf3[m Merge pull request #52 from mgrassa14/backend
+[1;34m|[m[1;35m\[m [1;33m\[m [34m\[m  
+* [1;35m|[m [1;33m|[m [34m|[m [33m6fca760[m commented or deleted deployment attempt code
+* [1;35m|[m [1;33m|[m [34m|[m [33m7b3a778[m update app.js to see if deploy both front and backend into cloud run
+* [1;35m|[m [1;33m|[m [34m|[m [33m97f50f8[m update server.js for deployment
+* [1;35m|[m [1;33m|[m [34m|[m [33m419ca98[m update dockerfile
+* [1;35m|[m [1;33m|[m [34m|[m [33mb0fb2ae[m add dockerfile to try to deploy to cloud run
+[1;35m|[m [1;35m|[m [1;33m|[m * [33m243489f[m double check that nothing was broken
+[1;35m|[m [1;35m|[m [1;33m|[m[1;33m/[m  
+[1;35m|[m [1;35m|[m * [33m2c0046a[m bonjour new updateed method just dropped adapted to how you send a dog
+[1;35m|[m [1;35m|[m[1;35m/[m  
