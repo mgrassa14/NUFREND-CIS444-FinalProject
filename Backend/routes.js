@@ -343,4 +343,49 @@ router.put('/user/addfavorites/:id', async (req, res) => {
   }
 });
 
+// ────────────────────────────────────
+//  Business / Shelter profile – UPDATE
+// ────────────────────────────────────
+router.put('/business/:id', verifyToken, async (req, res) => {
+  const db = req.app.locals.db;
+  const business = db.collection('business');
+  const dogs = db.collection('Dogs');
+
+  try {
+    const { address, phone, email } = req.body;
+
+    const updates = { updated_at: new Date() };
+    if (address) updates.address = address;
+    if (phone)   updates.phone   = phone;
+    if (email)   updates.contactEmail = email;
+
+    await business.updateOne(
+      { _id: new ObjectId(req.params.id) },
+      { $set: updates }
+    );
+
+    const updated = await business.findOne({ _id: new ObjectId(req.params.id) });
+
+    // Propagate shelter info to all dogs this shelter owns
+    if (updated && updated.dogs && updated.dogs.length > 0) {
+      const shelterInfo = {
+        name:    updated.name || '',
+        address: updated.address || '',
+        phone:   updated.phone || '',
+        email:   updated.contactEmail || ''
+      };
+
+      await dogs.updateMany(
+        { _id: { $in: updated.dogs } },
+        { $set: { shelter: shelterInfo, updated_at: new Date() } }
+      );
+    }
+
+    res.status(200).json(updated);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Failed to update shelter profile');
+  }
+});
+
 module.exports = router;

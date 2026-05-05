@@ -104,7 +104,14 @@ async function handleSubmit(e) {
         sessionStorage.setItem('token', data.idToken);
         localStorage.setItem('userType', data.userType);
         localStorage.setItem('refreshToken', data.refreshToken);
-        window.location.href = '/views/feed-page.html';
+
+        // Shelters go to onboarding to fill in address/phone/email
+        if (accountType === 'shelter') {
+          sessionStorage.setItem('shelterName', nameInput);
+          window.location.href = '/views/shelter-onboarding.html';
+        } else {
+          window.location.href = '/views/feed-page.html';
+        }
       } else {
         alert(data.message || 'Signup failed. Please try again.');
       }
