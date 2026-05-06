@@ -60,18 +60,16 @@ async function handleSubmit(e) {
   const email     = document.getElementById('input-email').value.trim();
   const password  = document.getElementById('input-password').value.trim();
 
-
   if (currentTab === "login") {
     // --- LOGIN ---
     try {
-      // const response = await fetch('/api/login', {
       const response = await fetch('http://localhost:3000/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
 
-      const data = await response.json();// data.idToken is your JWT
+      const data = await response.json();
 
       if (response.ok) {
         sessionStorage.setItem('userId', data.userId);
@@ -90,7 +88,6 @@ async function handleSubmit(e) {
   } else {
     // --- SIGNUP ---
     try {
-      // const response = await fetch('/api/signup', {
       const response = await fetch('http://localhost:3000/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -105,12 +102,14 @@ async function handleSubmit(e) {
         localStorage.setItem('userType', data.userType);
         localStorage.setItem('refreshToken', data.refreshToken);
 
-        // Shelters go to onboarding to fill in address/phone/email
         if (accountType === 'shelter') {
+          // Shelters go to onboarding for address/phone/email
           sessionStorage.setItem('shelterName', nameInput);
-          window.location.href = '/views/createaccount.html';
+          window.location.href = '/views/shelter-onboarding.html';
         } else {
-          window.location.href = '/views/feed-page.html';
+          // Adopters go to profile setup
+          sessionStorage.setItem('setupMode', 'true');
+          window.location.href = '/views/createaccount.html';
         }
       } else {
         alert(data.message || 'Signup failed. Please try again.');

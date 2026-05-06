@@ -1,583 +1,358 @@
+/* ─────────────────────────────────────────────
+   createaccount.js  –  Adopter Profile
+   Modes: setup (first time), view (returning), edit
+   ───────────────────────────────────────────── */
 
 const userId = sessionStorage.getItem('userId');
+const token  = sessionStorage.getItem('token');
 
-// ── POPULATE SELECTS ──────────────────────────────────────
-const ageSelect = document.getElementById('dog-age');
-for (let i = 1; i <= 20; i++) {
-  const opt = document.createElement('option');
-  opt.value = i;
-  opt.textContent = i === 1 ? '1 year' : `${i} years`;
-  ageSelect.appendChild(opt);
-}
+const $ = (id) => document.getElementById(id);
 
-const weightSelect = document.getElementById('dog-weight');
-weightSelect.className = 'text-sm font-semibold text-gray-800 bg-green-50 border-none outline-none w-full cursor-pointer appearance-none';
-for (let i = 1; i <= 120; i++) {
-  const opt = document.createElement('option');
-  opt.value = i;
-  opt.textContent = `${i} lbs`;
-  weightSelect.appendChild(opt);
-}
+let isSetupMode = false;   // true when coming from signup
+let originalData = null;   // for reverting on cancel
+let pendingPhoto = null;   // File object if user picks a new photo
 
-const energySelect = document.getElementById('dog-energy');
-energySelect.className = 'text-sm font-semibold text-gray-800 bg-orange-50 border-none outline-none w-full cursor-pointer appearance-none';
-const energyOptions = [
-  { label: '< 30 min',  value: 'low energy' },
-  { label: '30–60 min', value: 'moderate energy' },
-  { label: '1–2 hrs',   value: 'high energy' },
-  { label: '2+ hrs',    value: 'needs daily runs' },
+// ── Editable fields ──
+const INPUT_IDS = [
+  'user-name', 'person-city', 'person-state', 'person-zip',
+  'user-phone', 'user-email', 'user-bio'
 ];
-energyOptions.forEach(({ label, value }) => {
-  const opt = document.createElement('option');
-  opt.value = value;
-  opt.textContent = label;
-  energySelect.appendChild(opt);
-});
+const SELECT_IDS = [
+  'dog-age', 'dog-weight', 'dog-energy', 'dog-gender', 'dog-color'
+];
 
-const genderEl = document.getElementById('dog-gender');
-genderEl.outerHTML = `<select id="dog-gender" class="text-sm font-semibold text-gray-800 bg-transparent border-none outline-none w-full cursor-pointer appearance-none mt-0.5">
-  <option value="">--</option>
-  <option value="male">Male 🐾 The little prince</option>
-  <option value="female">Female 🌸 The Good Girl</option>
-</select>`;
+// ── Toast ──
+function showToast(msg, type = 'success') {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.remove('bg-green-500', 'bg-red-500');
+  t.classList.add(type === 'success' ? 'bg-green-500' : 'bg-red-500');
+  t.classList.remove('opacity-0');
+  t.classList.add('opacity-100');
+  setTimeout(() => {
+    t.classList.remove('opacity-100');
+    t.classList.add('opacity-0');
+  }, 3000);
+}
 
-const colorEl = document.getElementById('dog-color');
-colorEl.outerHTML = `<input id="dog-color" type="text" placeholder="e.g. the golden one..." 
-  class="text-sm font-semibold text-gray-800 bg-transparent border-none outline-none w-full mt-0.5 placeholder:font-normal placeholder:text-gray-300" />`;
+// ── Populate select options ──
+function populateSelects() {
+  const ageOpts = ['Puppy (< 1yr)', '1–3 years', '3–7 years', '7+ years'];
+  const weightOpts = ['Small (< 20 lbs)', 'Medium (20–50 lbs)', 'Large (50–90 lbs)', 'X-Large (90+ lbs)'];
+  const energyOpts = ['Low', 'Medium', 'High'];
 
-// ── TAG CHIPS ─────────────────────────────────────────────
-const tagCategories = {
-  'Personality': [
-    'curious', 'playful', 'gentle', 'affectionate', 'loyal', 'goofy',
-    'calm', 'confident', 'independent', 'spirited'
-  ],
-  'Social': [
-    'loves kids', 'dog friendly', 'loves cats', 'cat caution',
-    'good with seniors', 'only pet preferred', 'warms up slowly', 'social butterfly'
-  ],
-  'Energy': [
-    'high energy', 'moderate energy', 'low energy', 'couch potato',
-    'needs daily runs', 'loves fetch', 'loves swimming', 'loves hiking',
-    'agility star', 'water baby', 'certified napper', 'loves car rides'
-  ],
-  'Lifestyle': [
-    'toy hoarder', 'treat motivated', 'apartment ok', 'needs a yard',
-    'needs a big space', 'fenced yard required', 'indoor homebody', 'outdoor lover',
-    'quiet home preferred'
-  ],
-  'Training': [
-    'house trained', 'crate trained', 'leash trained', 'knows basic commands',
-    'loves learning', 'needs training', 'first-time owner ok', 'experienced owner needed'
-  ],
-  'Care': [
-    'affectionate', 'gentle', 'loyal', 'cuddle bug', 'lap dog', 'velcro dog',
-    'low shedding', 'heavy shedder', 'hypoallergenic', 'easy coat',
-    'regular grooming needed', 'medical needs'
-  ],
-  'Special Notes': [
-    'senior dog', 'separation anxiety', 'vocal', 'shy at first',
-    'escape artist', 'resource guarder'
-  ],
-};
+  fillSelect('dog-age', ageOpts);
+  fillSelect('dog-weight', weightOpts);
+  fillSelect('dog-energy', energyOpts);
+}
 
-const chipBase   = 'px-3 py-1 rounded-full text-xs border border-gray-200 text-gray-600 bg-transparent hover:border-blue-300 transition cursor-pointer select-none';
-const chipActive = 'px-3 py-1 rounded-full text-xs border border-blue-500 text-white bg-blue-500 transition cursor-pointer select-none';
+function fillSelect(id, options) {
+  const sel = $(id);
+  options.forEach(opt => {
+    const o = document.createElement('option');
+    o.value = opt;
+    o.textContent = opt;
+    sel.appendChild(o);
+  });
+}
 
-function buildTagChips() {
-  const container = document.getElementById('dog-tags');
-  if (!container) return;
-  container.innerHTML = '';
-
-  Object.entries(tagCategories).forEach(([category, tags]) => {
-    const label = document.createElement('p');
-    label.className = 'w-full text-[10px] text-gray-400 uppercase tracking-wide mt-3 mb-1';
-    label.textContent = category;
-    container.appendChild(label);
-
-    tags.forEach(tag => {
-      const chip = document.createElement('span');
-      chip.textContent = tag;
-      chip.dataset.tag = tag;
-      chip.dataset.active = 'false';
-      chip.className = chipBase;
-      chip.style.webkitTapHighlightColor = 'transparent';
-
-      chip.addEventListener('click', () => {
-        const isActive = chip.dataset.active === 'true';
-        chip.dataset.active = String(!isActive);
-        chip.className = isActive ? chipBase : chipActive;
-        chip.style.webkitTapHighlightColor = 'transparent';
-      });
-
-      container.appendChild(chip);
+// ── Health check toggles ──
+function initHealthToggles() {
+  ['dog-vaccinated', 'dog-neutered'].forEach(id => {
+    $(id).addEventListener('click', () => {
+      if (!isEditable()) return;
+      const svg = $(id).querySelector('svg');
+      const active = svg.classList.contains('text-green-500');
+      svg.classList.remove('text-green-500', 'text-gray-300');
+      svg.classList.add(active ? 'text-gray-300' : 'text-green-500');
     });
   });
 }
 
-// ── GET SELECTED TAGS ─────────────────────────────────────
-function getSelectedTags() {
-  return [...document.querySelectorAll('#dog-tags [data-tag]')]
-    .filter(el => el.dataset.active === 'true')
-    .map(el => el.dataset.tag);
+function setHealthIcon(id, active) {
+  const svg = $(id).querySelector('svg');
+  svg.classList.remove('text-green-500', 'text-gray-300');
+  svg.classList.add(active ? 'text-green-500' : 'text-gray-300');
 }
 
-// ── PREFILL FROM SESSION ──────────────────────────────────
-function prefillFromSession() {
-  const name  = sessionStorage.getItem('name');
-  const email = sessionStorage.getItem('email');
+// ── Tag pills ──
+const AVAILABLE_TAGS = [
+  'Good with kids', 'Good with cats', 'Good with dogs',
+  'House trained', 'Crate trained', 'Leash trained',
+  'Hypoallergenic', 'Emotional support', 'Active lifestyle',
+  'Apartment friendly', 'First-time owner'
+];
+let selectedTags = [];
 
-  console.log('prefill name:', name);
-  console.log('prefill email:', email);
+function renderTags() {
+  const container = $('dog-tags');
+  container.innerHTML = AVAILABLE_TAGS.map(tag => {
+    const isSelected = selectedTags.includes(tag);
+    const colorClasses = isSelected
+      ? 'border-green-400 bg-green-50'
+      : 'border-gray-100 bg-white';
+    const iconColor = isSelected ? 'text-green-500' : 'text-gray-300';
+    const disabled = !isEditable() ? 'pointer-events-none' : 'cursor-pointer';
 
-  // Make sure these IDs match your createaccount.html inputs exactly
-  const map = {
-    'user-name':  name,
-    'user-email': email,
-  };
+    return `
+      <div class="tag-pill flex items-center gap-1.5 border ${colorClasses} rounded-xl px-3 py-2 ${disabled} transition-colors"
+           data-tag="${tag}">
+        <svg class="w-4 h-4 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke-width="2" stroke-linecap="round"/>
+          <polyline points="22 4 12 14.01 9 11.01" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="text-sm text-gray-700">${tag}</span>
+      </div>
+    `;
+  }).join('');
 
-  Object.entries(map).forEach(([id, value]) => {
-    const el = document.getElementById(id);
-    if (el && value && value !== 'undefined') el.value = value;
-  });
-}
-async function prefillProfile() {
-  const userId = sessionStorage.getItem('userId');
-
-  if (!userId) {
-    console.log("No userId in sessionStorage, falling back to session data");
-    prefillFromSession();
-    return;
-  }
-
-  try {
-    const res = await fetch(`http://localhost:3000/api/user/${userId}`);
-
-    if (!res.ok) {
-      throw new Error("User not found in DB");
-    }
-
-    const user = await res.json();
-
-    console.log("DB user loaded:", user);
-
-    const map = {
-      // basic fields
-      'user-name': user.name,
-      'user-email': user.email,
-      'user-bio': user.bio,
-      'user-phone': user.phone,
-
-      // location (flattened)
-      'person-city': user.location?.city,
-      'person-state': user.location?.state,
-      'person-zip': user.location?.zip,
-
-      // preferences (flattened examples)
-      'dog-age': user.preferences?.preferred_age,
-      'dog-energy': user.preferences?.preferred_energy,
-      'dog-gender': user.preferences?.preferred_gender,
-      'dog-color': user.preferences?.preferred_color,
-      'dog-weight': user.preferences?.preferred_weight?.max,
-    };
-
-    Object.entries(map).forEach(([id, value]) => {
-      const el = document.getElementById(id);
-      if (el && value !== undefined && value !== null && value !== '') {
-        el.value = value;
-      }
-    });
-
-    // optional: log images or arrays
-    console.log("Liked dogs:", user.liked_dogs);
-    console.log("Image URL:", user.image_url);
-
-  } catch (err) {
-    console.warn("DB fetch failed, using sessionStorage fallback:", err);
-    prefillFromSession();
-  }
-}
-  // // // ── PHOTO UPLOAD ──────────────────────────────────────────
-document.getElementById('photo-upload').addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const img = document.getElementById('profile-image');
-    img.src = e.target.result;
-    img.classList.remove('hidden');
-    document.getElementById('photo-placeholder')?.classList.add('hidden');
-  };
-  reader.readAsDataURL(file);
-
-
- });
-// ── LOAD PROFILE ──────────────────────────────────────────
-async function loadProfile() {
- prefillProfile();
-}
-
-//   try {
-// //     const response = await fetch(`http://localhost:3000/api/user/${userId}`);
-// //     const person = await response.json();
-
-// //     if (!response.ok) {
-// //       console.error('User not found');
-// //       prefillFromSession(); // still prefill even if fetch fails
-// //       return;
-// //     }
-
-// //     // Image
-// //     if (person.image_url) {
-// //       const img = document.getElementById('profile-image');
-// //       img.src = person.image_url;
-// //       img.alt = person.name;
-// //       img.classList.remove('hidden');
-// //       document.getElementById('photo-placeholder')?.classList.add('hidden');
-// //     }
-
-// //     // Prefill inputs from person data if available, else fall back to session
-// //     const nameEl  = document.getElementById('user-name');
-// //     const emailEl = document.getElementById('user-email');
-// //     const bioEl   = document.getElementById('dog-description');
-// //     const phoneEl = document.getElementById('user-phone');
-
-// //     if (nameEl)  nameEl.value  = person.name  || sessionStorage.getItem('name')  || '';
-// //     if (emailEl) emailEl.value = person.email || sessionStorage.getItem('email') || '';
-// //     if (bioEl)   bioEl.value   = person.bio   || '';
-// //     if (phoneEl) phoneEl.value = person.phone || '';
-
-// //     // Location
-// //     if (person.location) {
-// //       const cityEl  = document.getElementById('person-city');
-// //       const stateEl = document.getElementById('person-state');
-// //       const zipEl   = document.getElementById('person-zip');
-// //       if (cityEl)  cityEl.value  = person.location.city  || '';
-// //       if (stateEl) stateEl.value = person.location.state || '';
-// //       if (zipEl)   zipEl.value   = person.location.zip   || '';
-// //     }
-
-// //   } catch (error) {
-// //     console.error('Error loading profile:', error);
-// //     prefillFromSession(); // fallback on error
-// //   }
-// // }
-
-// // // ── PHOTO UPLOAD ──────────────────────────────────────────
-// // document.getElementById('photo-upload').addEventListener('change', async (e) => {
-// //   const file = e.target.files[0];
-// //   if (!file) return;
-
-// //   const reader = new FileReader();
-// //   reader.onload = (e) => {
-// //     const img = document.getElementById('profile-image');
-// //     img.src = e.target.result;
-// //     img.classList.remove('hidden');
-// //     document.getElementById('photo-placeholder')?.classList.add('hidden');
-// //   };
-// //   reader.readAsDataURL(file);
-
-// //   const formData = new FormData();
-// //   formData.append('image', file);
-// //   formData.append('userId', userId);
-
-// //   try {
-// //     const res = await fetch('/api/upload-image', {
-// //       method: 'POST',
-// //       headers: { 'Authorization': `Bearer ${sessionStorage.getItem('idToken')}` },
-// //       body: formData
-// //     });
-// //     const data = await res.json();
-// //     if (res.ok) {
-// //       sessionStorage.setItem('image_url', data.image_url);
-// //     } else {
-// //       console.error('Upload failed:', data.message);
-// //     }
-// //   } catch (err) {
-// //     console.error('Upload error:', err);
-// //   }
-// });
-
-// ── SUBMIT BUTTON ─────────────────────────────────────────
-const submitBtn = document.createElement('button');
-submitBtn.textContent = 'Create Account';
-submitBtn.className = 'w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-2xl py-3 text-sm transition';
-
-const btnWrapper = document.createElement('div');
-btnWrapper.className = 'max-w-2xl mx-auto px-4 mb-8';
-btnWrapper.appendChild(submitBtn);
-document.querySelector('.max-w-2xl.mb-12')?.insertAdjacentElement('afterend', btnWrapper);
-
-// ── INIT ──────────────────────────────────────────────────
-buildTagChips();
-loadProfile();
-
-// ── SUBMIT HANDLER ────────────────────────────────────────
-
-submitBtn.addEventListener('click', async () => {
-  const get = (id) => document.getElementById(id)?.value?.trim() ?? '';
-
-  const token = sessionStorage.getItem('idToken');
-  const userId = sessionStorage.getItem('userId'); // ✅ FIX: ensure defined
-
-  let imageUrl = sessionStorage.getItem('image_url') ?? ''; // ✅ FIX: must be declared
-
-  const selectedTags = getSelectedTags();
-  const errors = [];
-
-  const name  = get('user-name');
-  const email = get('user-email');
-  const phone = get('user-phone');
-  const city  = get('person-city');
-  const state = get('person-state').toUpperCase();
-  const zip   = get('person-zip');
-
-  if (!name) errors.push('Please enter your name');
-  if (!email || !email.includes('@')) errors.push('Please enter a valid email');
-  if (!phone) errors.push('Please enter a phone number');
-  if (!city || !state || !zip) errors.push('Please enter full location');
-  if (zip && !/^\d{5}$/.test(zip)) errors.push('Zip must be 5 digits');
-  if (state && !/^[A-Z]{2}$/.test(state)) errors.push('State must be 2-letter');
-  if (selectedTags.length === 0) errors.push('Select at least one tag');
-
-  if (errors.length > 0) {
-    alert(errors.join('\n'));
-    return;
-  }
-
-  const file = document.getElementById('photo-upload').files[0];
-
-  if (file) {
-    const formData = new FormData();
-    formData.append('image', file);
-    formData.append('userId', userId);
-
-    try {
-      const uploadRes = await fetch('http://localhost:3000/api/user/upload-image', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`
-        },
-        body: formData
-      });
-
-      const uploadData = await uploadRes.json();
-
-      console.log("UPLOAD RESPONSE:", uploadData);
-
-      if (uploadRes.ok) {
-        imageUrl = uploadData.image_url; // ✅ safe assignment
-        sessionStorage.setItem('image_url', imageUrl);
+  // Bind click
+  container.querySelectorAll('.tag-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      if (!isEditable()) return;
+      const tag = pill.dataset.tag;
+      if (selectedTags.includes(tag)) {
+        selectedTags = selectedTags.filter(t => t !== tag);
       } else {
-        console.warn('Image upload failed:', uploadData.message);
+        selectedTags.push(tag);
       }
+      renderTags();
+    });
+  });
+}
 
-    } catch (err) {
-      console.warn('Image upload error:', err);
+// ── Mode helpers ──
+function isEditable() {
+  return isSetupMode || !$('btn-save').classList.contains('hidden');
+}
+
+function setFieldsEditable(editable) {
+  INPUT_IDS.forEach(id => {
+    const el = $(id);
+    if (editable) {
+      el.removeAttribute('readonly');
+      el.classList.add('hover:border-gray-300', 'focus:border-blue-400');
+    } else {
+      el.setAttribute('readonly', true);
+      el.classList.remove('hover:border-gray-300', 'focus:border-blue-400');
     }
+  });
+
+  SELECT_IDS.forEach(id => {
+    $(id).disabled = !editable;
+  });
+
+  // Photo overlay
+  const overlay = $('photo-overlay');
+  if (editable) {
+    overlay.classList.remove('hidden');
+    overlay.classList.add('flex');
+  } else {
+    overlay.classList.add('hidden');
+    overlay.classList.remove('flex');
+  }
+}
+
+function enterViewMode() {
+  setFieldsEditable(false);
+  $('btn-edit').classList.remove('hidden');
+  $('btn-save').classList.add('hidden');
+  $('btn-cancel').classList.add('hidden');
+  renderTags();
+}
+
+function enterEditMode() {
+  setFieldsEditable(true);
+  $('btn-edit').classList.add('hidden');
+  $('btn-save').classList.remove('hidden');
+  $('btn-cancel').classList.remove('hidden');
+  renderTags();
+}
+
+function enterSetupMode() {
+  isSetupMode = true;
+  setFieldsEditable(true);
+  $('btn-edit').classList.add('hidden');
+  $('btn-save').classList.remove('hidden');
+  $('btn-cancel').classList.add('hidden');
+  renderTags();
+}
+
+// ── Load profile from DB ──
+async function loadProfile() {
+  try {
+    const res = await fetch(`http://localhost:3000/api/user/${userId}`, {
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
+    console.error('Failed to load profile:', err);
+    return null;
+  }
+}
+
+function populateFields(data) {
+  $('user-name').value   = data.name   || '';
+  $('person-city').value = data.city   || '';
+  $('person-state').value = data.state || '';
+  $('person-zip').value  = data.zip    || '';
+  $('user-phone').value  = data.phone  || '';
+  $('user-email').value  = data.email  || '';
+  $('user-bio').value    = data.bio    || '';
+
+  // Photo
+  if (data.photo) {
+    const img = $('profile-image');
+    img.src = data.photo;
+    img.classList.remove('hidden');
+    $('photo-placeholder').classList.add('hidden');
   }
 
-  // ✅ NOW imageUrl is guaranteed resolved before payload
-  const payload = {
-    _id: userId,
-    name,
-    bio: get('user-bio'),
-    email,
-    phone,
-    image_url: imageUrl, // ✅ always defined now
-    location: { city, state, zip },
+  // Preferences
+  if (data.preferences) {
+    $('dog-age').value    = data.preferences.age    || '';
+    $('dog-weight').value = data.preferences.weight || '';
+    $('dog-energy').value = data.preferences.energy || '';
+    $('dog-gender').value = data.preferences.gender || '';
+    $('dog-color').value  = data.preferences.color  || '';
+    setHealthIcon('dog-vaccinated', !!data.preferences.vaccinated);
+    setHealthIcon('dog-neutered',   !!data.preferences.neutered);
+    selectedTags = data.preferences.tags || [];
+  }
+}
 
+// ── Collect form data ──
+function collectData() {
+  return {
+    name:  $('user-name').value.trim(),
+    city:  $('person-city').value.trim(),
+    state: $('person-state').value.trim().toUpperCase(),
+    zip:   $('person-zip').value.trim(),
+    phone: $('user-phone').value.trim(),
+    email: $('user-email').value.trim(),
+    bio:   $('user-bio').value.trim(),
     preferences: {
-      raw_tags: selectedTags,
-      preferred_age: document.getElementById('dog-age')?.value ?? '',
-      preferred_energy: document.getElementById('dog-energy')?.value ?? '',
-      preferred_gender: document.getElementById('dog-gender')?.value ?? '',
-      preferred_weight: { max: document.getElementById('dog-weight')?.value ?? '' },
-      preferred_color: get('dog-color'),
-    },
-
-    liked_dogs: [],
-    passed_dogs: [],
+      age:        $('dog-age').value,
+      weight:     $('dog-weight').value,
+      energy:     $('dog-energy').value,
+      gender:     $('dog-gender').value,
+      color:      $('dog-color').value,
+      vaccinated: $('dog-vaccinated').querySelector('svg').classList.contains('text-green-500'),
+      neutered:   $('dog-neutered').querySelector('svg').classList.contains('text-green-500'),
+      tags:       [...selectedTags]
+    }
   };
+}
 
-  console.log('Submitting:', payload);
+// ── Save ──
+async function saveProfile() {
+  const data = collectData();
+  const saveBtn = $('btn-save');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving…';
 
   try {
-    const res = await fetch('http://localhost:3000/api/user/create-profile', {
-      method: 'POST',
+    // Photo upload if new photo selected
+    if (pendingPhoto) {
+      const fd = new FormData();
+      fd.append('photo', pendingPhoto);
+      const photoRes = await fetch(`http://localhost:3000/api/user/${userId}/photo`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: fd
+      });
+      if (!photoRes.ok) throw new Error('Photo upload failed');
+      pendingPhoto = null;
+    }
+
+    // Save profile data
+    const res = await fetch(`http://localhost:3000/api/user/${userId}`, {
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
+        'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(data)
     });
 
-    const data = await res.json();
+    if (!res.ok) throw new Error('Save failed');
 
-    if (res.ok) {
-      window.location.href = '/frontend/views/feed-page.html';
-    } else {
-      alert(data.message || 'Registration failed');
-    }
+    const updated = await res.json();
+    originalData = structuredClone(updated);
+    isSetupMode = false;
+
+    populateFields(updated);
+    enterViewMode();
+    showToast('Profile saved!');
 
   } catch (err) {
-    console.error('Submit error:', err);
-    alert('Something went wrong');
+    console.error(err);
+    showToast(err.message || 'Could not save', 'error');
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save Profile';
   }
+}
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!userId || !token) {
+    window.location.href = './loginandsignupview.html';
+    return;
+  }
+
+  populateSelects();
+  initHealthToggles();
+
+  // Check if coming from signup (flag set by loginandsignupview.js)
+  const fromSignup = sessionStorage.getItem('setupMode') === 'true';
+
+  const profile = await loadProfile();
+
+  if (profile && profile.name && !fromSignup) {
+    // Returning user — show their data in view mode
+    originalData = structuredClone(profile);
+    populateFields(profile);
+    selectedTags = profile.preferences?.tags || [];
+    renderTags();
+    enterViewMode();
+  } else {
+    // First time or from signup — setup mode
+    if (profile && profile.name) {
+      populateFields(profile);
+      selectedTags = profile.preferences?.tags || [];
+    }
+    sessionStorage.removeItem('setupMode');
+    enterSetupMode();
+  }
+
+  // ── Button handlers ──
+  $('btn-edit').addEventListener('click', () => {
+    originalData = collectData();
+    enterEditMode();
+  });
+
+  $('btn-cancel').addEventListener('click', () => {
+    if (originalData) populateFields(originalData);
+    selectedTags = originalData?.preferences?.tags || [];
+    enterViewMode();
+  });
+
+  $('btn-save').addEventListener('click', saveProfile);
+
+  // ── Photo picker ──
+  $('photo-upload').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    pendingPhoto = file;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = $('profile-image');
+      img.src = reader.result;
+      img.classList.remove('hidden');
+      $('photo-placeholder').classList.add('hidden');
+    };
+    reader.readAsDataURL(file);
+  });
 });
-// submitBtn.addEventListener('click', async () => {
-//   const get = (id) => document.getElementById(id)?.value?.trim() ?? '';
-
-//   const token    = sessionStorage.getItem('idToken');
-//   //const imageUrl = sessionStorage.getItem('image_url') ?? '';
-//   const selectedTags = getSelectedTags();
-//   const errors = [];
-
-//   const name  = get('user-name');
-//   const email = get('user-email');
-//   const phone = get('user-phone');
-//   const city  = get('person-city');
-//   const state = get('person-state').toUpperCase();
-//   const zip   = get('person-zip');
-
-//   if (!name)                               errors.push('Please enter your name');
-//   if (!email || !email.includes('@'))      errors.push('Please enter a valid email');
-//   if (!phone)                              errors.push('Please enter a phone number');
-//   if (!city || !state || !zip)             errors.push('Please enter your full location (city, state, zip)');
-//   if (zip   && !/^\d{5}$/.test(zip))       errors.push('Zip code must be 5 digits');
-//   if (state && !/^[A-Z]{2}$/.test(state))  errors.push('State must be a 2-letter abbreviation');
-//   // if (!imageUrl)                           errors.push('Please upload a profile photo');
-//   if (selectedTags.length === 0)           errors.push('Please select at least one tag');
-
-//   if (errors.length > 0) {
-//     alert(errors.join('\n'));
-//     return;
-//   }
-   
-//   const file = document.getElementById('photo-upload').files[0];
-//   if (file) {
-//     const formData = new FormData();
-//     formData.append('image', file);
-//     console.log("userId:", userId);
-//     formData.append('userId', userId);
-
-//     try {
-//       const uploadRes = await fetch(`http://localhost:3000/api/user/upload-image`, {
-//         method: 'POST',
-//         headers: { 'Authorization': `Bearer ${token}` },
-//         body: formData
-//       });
-//       const uploadData = await uploadRes.json();
-//       if (uploadRes.ok) {
-//         imageUrl = uploadData.image_url;
-//         sessionStorage.setItem('image_url', imageUrl);
-//       } else {
-//         console.warn('Image upload failed:', uploadData.message);
-//       }
-//     } catch (err) {
-//       console.warn('Image upload error:', err);
-//     }
-//   }
-
-
-//   const payload = {
-//     "_id":  userId,
-//     name,
-//     bio:        get('user-bio'),
-//     email,
-//     phone,
-//     image_url:  imageUrl,
-//     location:   { city, state, zip },
-
-//     preferences: {
-//       raw_tags:         selectedTags,
-//       preferred_age:    document.getElementById('dog-age')?.value    ?? '',
-//       preferred_energy: document.getElementById('dog-energy')?.value ?? '',
-//       preferred_gender: document.getElementById('dog-gender')?.value ?? '',
-//       preferred_weight: { max: document.getElementById('dog-weight')?.value ?? '' },
-//       preferred_color:  get('dog-color'),
-//     },
-
-//     liked_dogs:  [],
-//     passed_dogs: [],
-//   };
-
-//   console.log('Submitting:', payload);
-
-//   try {
-//     const res = await fetch('http://localhost:3000/api/user/create-profile', {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//         'Authorization': `Bearer ${token}`
-//       },
-//       body: JSON.stringify(payload)
-//     });
-
-//     const data = await res.json();
-
-//     if (res.ok) {
-//       window.location.href = '/frontend/views/feed-page.html';
-//     } else {
-//       alert(data.message || 'Registration failed');
-//     }
-//   } catch (err) {
-//     console.error('Submit error:', err);
-//     alert('Something went wrong');
-//   }
-// });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-loadDogProfile();
-
-// how to add dogs into html based on userType ---------------------------------------------
-// // get unique id from createaccount.html
-// const feedBox = document.getElementById("feed-box");
-// // request dogs for that user
-// const res = await fetch("http://localhost:3000/api/dogs");
-// const profiles = await res.json();
-// // for loop through user's list of all dogs and create cards for each of them
-// profiles.forEach(profile => {
-//     // create div
-//     const card = document.createElement("div");
-//     // give div class names
-//     card.className = "profile snap-start relative w-full h-[33rem] rounded-xl overflow-hidden bg-cover bg-center cursor-pointer transition-transform duration-200 hover:scale-[1.02]";
-//     // set background image
-//     card.style.backgroundImage = `url(${profile.photos[0]})`;
-//     // set inner content ❤️
-//     card.innerHTML = `
-//         <div class="absolute bottom-0 left-0 w-full p-3 bg-gradient-to-t from-black/60 to-transparent text-white">
-//         <div class="name font-bold text-3xl">${profile.name}</div>
-//         </div>
-//         <button class="like absolute top-3 right-3 text-5xl">🤍</button>
-//     `;
-
-//     // redirect on card click -> click to dog's profile
-//     card.addEventListener("click", () => {
-//         window.location.href = `dog-profile-view.html?id=${profile._id}`;
-//     });
-
-//     // add div profile to feed-box and loop again until no more profiles
-//     feedBox.appendChild(card);
-// });
